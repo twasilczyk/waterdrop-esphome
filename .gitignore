@@ -1,0 +1,25 @@
+# common
+*.bak
+
+# electronics
+\#auto_saved_files\#
+_autosave-*
+*.bck
+*-backups/
+*-cache
+*-cache.lib
+*.kicad_pcb-bak
+*.kicad_prl
+*.lck
+*.net
+*.sch-bak
+
+# firmware
+.esphome
+
+# python
+__pycache__
+
+# project temporary files
+media-room-controller-board.step
+media-room-controller-board.stl
