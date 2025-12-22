@@ -48,6 +48,134 @@ wifi:
         blue: 0%
         brightness: 20%
 
+script:
+  - id: send_frame
+    mode: queued
+    parameters:
+      command: uint8_t
+      payload: std::vector<uint8_t>
+    then:
+      - lambda: |-
+          auto checksum = [](const std::vector<uint8_t> &bytes) -> uint8_t {
+            uint8_t s = 0;
+            for (auto b : bytes) s += b;
+            return s;
+          };
+
+          static std::vector<uint8_t> frame;
+          frame.clear();
+          frame.reserve(payload.size() + 5);
+
+          frame.push_back(0xAA);
+          frame.push_back(0x55);
+          bool payload_checksum = false;
+          if (command == 0xC2 || command == 0x22) payload_checksum = true;
+
+          uint8_t len = payload.size() + 5 + (payload_checksum ? 1 : 0);
+          frame.push_back(len);
+          frame.push_back(command);
+
+          frame.insert(frame.end(), payload.begin(), payload.end());
+
+          uint8_t frame_checksum = checksum(frame);
+          if (payload_checksum) {
+            uint8_t payload_checksum = checksum(payload);
+            if (command == 0x22) payload_checksum -= payload[0];
+            frame.push_back(payload_checksum);
+          }
+          frame.push_back(frame_checksum);
+
+          id(uart_bus).write_array(frame.data(), frame.size());
+
+  - id: send_message
+    mode: queued
+    parameters:
+      p22: std::vector<uint8_t>
+      pC5: std::vector<uint8_t>
+
+    then:
+      - logger.log: "Waterdrop Message"
+      - script.execute:
+          id: send_frame
+          command: 0xC2
+          payload: std::vector<uint8_t>{0xF1, 0x03, 0x00} # same between messages
+      - delay: 40ms
+      - script.execute:
+          id: send_frame
+          command: 0x22
+          payload: !lambda |-
+            return p22;
+      - delay: 30ms
+      - script.execute:
+          id: send_frame
+          command: 0xC5
+          payload: !lambda |-
+            return pC5;
+      - delay: 40ms
+
+interval:
+  - interval: 5000ms
+    then:
+      - script.execute:
+          id: send_message
+          p22: std::vector<uint8_t>{0x0E, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x11}
+          #p22: std::vector<uint8_t>{0x0E, 0x09, 0x60, 0x1F, 0x40, 0x0F, 0xA0, 0x22, 0x11}
+          pC5: std::vector<uint8_t>{0x01, 0x00, 0x40, 0x22, 0x00, 0x00, 0x00, 0x0A}
+      - script.execute:
+          id: send_message
+          p22: std::vector<uint8_t>{0x0F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x33}
+          #p22: std::vector<uint8_t>{0x0F, 0x10, 0xE0, 0x43, 0x80, 0x21, 0xC0, 0x44, 0x33}
+          pC5: std::vector<uint8_t>{0x02, 0x00, 0x00, 0x00, 0x35, 0x08, 0x34, 0x00}
+      - script.execute:
+          id: send_message
+                                  #                                  1-999
+                                  #   ??    ??    ??    ??    ??  | H TDS L |   ??    ??
+          p22: std::vector<uint8_t>{0x03, 0xFF, 0xFF, 0xFF, 0xFF, 0x00,  199, 0xFF, 0x0C}
+          #p22: std::vector<uint8_t>{0x03, 0x00, 0x00, 0x00, 0x00, 0x03,  231, 0x00, 0x0C}
+          pC5: std::vector<uint8_t>{0x03, 0x00, 0x0E, 0x01, 0xB0, 0x00, 0x0A, 0x00}
+      - script.execute:
+          id: send_message
+
+          # CF, RO, CB RED
+          #p22: std::vector<uint8_t>{0x02, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00}
+          #p22: std::vector<uint8_t>{0x02, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00}
+
+          # CF, RO RED; CB ORANGE
+          #p22: std::vector<uint8_t>{0x02, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00}
+
+          # CF, RO RED; CB WHITE
+          #p22: std::vector<uint8_t>{0x02, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00}
+
+          # CF, RO, CB WHITE
+          #p22: std::vector<uint8_t>{0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+
+          #p22: std::vector<uint8_t>{0x02,  0xFF, 0xFF,  0xFF, 0xFF,  0xFF, 0xFF,  0x00, 0x00}
+
+          # ORI
+                                  #        CF, RO, CB (H, L?):
+                                  #         White:     0000 00FF 01FF 01B0 02FF 06FF 0FFF 6FFF 9F00 9FFF AFFF AF00 DFFF DF00 FE00
+                                  #         Orange:    FF00* FF01* FFF0* FFFE* FFB0*
+                                  #         Red:       FFFF
+                                  #         * - blinking (bad value?)
+                                  #        >- CF   -<  >-  RO  -<  >-  CB  <-
+          p22: std::vector<uint8_t>{0x02, 0x01, 0xB0, 0x01, 0xB0, 0x01, 0xB0, 0x00, 0x00}
+          pC5: std::vector<uint8_t>{0x04, 0xF1, 0xF1, 0x00, 0x00, 0x00, 0x00, 0x00}
+      - script.execute:
+          id: send_message
+          p22: std::vector<uint8_t>{0x0D, 0x00, 0x0A, 0x00, 0x0A, 0x00, 0x0A, 0x00, 0x00}
+          pC5: std::vector<uint8_t>{0x05, 0x00, 0x00, 0x0E, 0x0E, 0x00, 0x00, 0x00}
+
+uart:
+  id: uart_bus
+  tx_pin:
+    number: GPIO5
+    inverted: true
+  rx_pin: GPIO6
+  baud_rate: 9600
+  debug:
+    direction: BOTH
+    dummy_receiver: true
+
 light:
   - platform: esp32_rmt_led_strip
     pin: GPIO21
@@ -58,3 +186,12 @@ light:
     name: "Status LED"
     default_transition_length: 0s
     restore_mode: ALWAYS_OFF
+
+button:
+  - platform: template
+    name: "Send init command"
+    on_press:
+      then:
+        - uart.write:
+            id: uart_bus
+            data: [0xAA, 0x55, 0x09, 0xC2, 0xFF, 0x01, 0x00, 0x00, 0xCA]
