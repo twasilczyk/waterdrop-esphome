@@ -1,0 +1,92 @@
+###
+# 3/8 valves
+###
+12V valve #1 power draw: ~500mA (continuous)
+
+###
+# Waterdrop comms
+###
+Voltage 5V
+Wiring:
+ - black: GND
+ - red: 5V
+ - white: CH2 Filter -> faucet
+ - yellow: CH1 faucet -> Filter
+
+Protocol (electrical):
+ - faucet has internal 5k pull-up resistance on both TX and RX
+ - 10.00k yellow-to-red, white-to-red
+ - less chatty: sharply to 3.5v, slowly to 5v
+ - more chatty: sharply to 5v
+ - test circuit:
+   TX: 2kOhm to TLP785 + 10k pull-up to 5V
+   RX: resistor divider 100k/50k + 10k pull-up to 5V
+
+Protocol:
+- Async serial
+- 9600 baud
+- 8 bits per frame, 1 stop bit, no parity, lsb first, non inverted, normal mode
+- checksum
+  - CH1: sum of all bytes except the last two
+  - CH2: sum of all bytes except the last one
+
+Commands:
+- cat CH1.txt | cut -d',' -f2 | cut -b 3- | tr '\n' ' ' | sed -e 's/AA 55/\nAA 55/g'
+
+Ch1 (less chatty, probably faucet)
+AA 55 0E 22 CC 00 09 SS 00 00 00 00 HH CS
+AA 55 - preamble
+      0E - length
+         22 - message family / direction (?)
+            CC - command / subtype (?) 01,02,03,0D,0E,0F
+               00 09 - constant
+                     SS - state/page/slot (?) 02,03
+                        00 00 00 00 - payload
+                                    HH - header checksum (CC+00+09+SS)
+                                       CS - frame checksum (except last two bytes)
+
+AA 55 0E 22 0D 00 09 02 00 00 00 00 18 47
+AA 55 0E 22 01 00 09 02 00 00 00 00 0C 3B
+AA 55 0E 22 0E 00 09 02 00 00 00 00 19 48
+AA 55 0E 22 0F 00 09 02 00 00 00 00 1A 49
+AA 55 0E 22 03 00 09 02 00 00 00 00 0E 3D
+AA 55 0E 22 02 00 09 02 00 00 00 00 0D 3C
+
+Ch2 (more chatty, probably filter)
+AA 55 09 C2 F1 03 00 F4 BE
+AA 55 - preamble
+      09 - length
+         C2 - message family (?)
+            F1 - subcmd (?)
+               03 00 F4 - args 1, 2, 3
+                        BE - checksum
+
+AA 55 0D C5 02 00 00 00 **35** 08 34 00 44 -> 53
+AA 55 0D C5 02 00 00 00 **34** 08 34 00 43 -> 54
+
+
+
+
+Frames every 80-90ms
+AA 55 09 C2 FF 01 00 00 CA              <- "hello" (?)
+AA 55 0D C5 01 00 40 22 00 00 00 0A 3E
+AA 55 09 C2 F1 03 00 F4 BE              <- "poll"
+AA 55 0D C5 02 00 00 00 00 08 34 00 0F
+AA 55 09 C2 F1 03 00 F4 BE
+AA 55 0D C5 03 00 19 01 B0 00 0A 00 A8
+
+Then, when CH1 starts responding, frames are every 170ms
+AA 55 09 C2 F1 03 00 F4 BE
+<first comm on CH1>
+AA 55 0F 22 0D 00 0A 00 0A 00 0A 00 00 1E 5B
+AA 55 0D C5 04 F1 F1 00 00 00 00 00 B7
+
+AA 55 09 C2 F1 03 00 F4 BE
+<second comm on CH1>
+AA 55 0F 22 01 00 0A 00 0A 00 0A 00 00 1E 4F
+AA 55 0D C5 05 00 00 19 19 00 00 00 08
+
+AA 55 09 C2 F1 03 00 F4 BE
+<third comm on CH1>
+AA 55 0F 22 0E 09 60 1F 40 0F A0 22 11 AA E8
+AA 55 0D C5 01 00 40 22 00 00 00 0A 3E
