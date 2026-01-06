@@ -4,6 +4,20 @@
 12V valve #1 power draw: ~500mA (continuous)
 
 ###
+# Summary
+###
+
+Figured out:
+ - TDS number
+ - Filter life and bounds for 3 separate filters
+ - Purge cycle
+ - Faucet open/close
+
+Unknowns:
+ - Why faucet displays nothing without connecting to actual water, but works on desk
+ - Error codes (e.g. E02 + error)
+
+###
 # Waterdrop comms
 ###
 Voltage 5V
@@ -40,7 +54,7 @@ AA 55 - preamble
          22 - message family / direction (?)
             CC - command / subtype (?) 01,02,03,0D,0E,0F
                00 09 - constant
-                     SS - state/page/slot (?) 02,03
+                     SS - 02: faucet open; 03: faucet closed
                         00 00 00 00 - payload
                                     HH - header checksum (CC+00+09+SS)
                                        CS - frame checksum (except last two bytes)
