@@ -104,3 +104,46 @@ AA 55 09 C2 F1 03 00 F4 BE
 <third comm on CH1>
 AA 55 0F 22 0E 09 60 1F 40 0F A0 22 11 AA E8
 AA 55 0D C5 01 00 40 22 00 00 00 0A 3E
+
+###
+# Buffer overrun
+###
+
+TDS display is transmitted as 16-bit unsigned integer, but only values 1-999 are displayed
+directly. Values 03E8 (1000) to 270F (9999) are displayed without trailing 2 digits as F-codes
+(e.g. 1000 as F10, 2500 as F25, 9999 as F99). Values for the next 6 thousands are using
+hexadecimal digits for the first digit only (e.g. 10000 as FA0, 11500 as FB5, 15999 as FF9).
+Values between 16000 and 65535 span beyond the lookup table, allowing to dump the next 49 bytes of
+EEPROM/Flash (50 bytes including the trailing padding null byte of 7-segment glyphs table).
+
+Useful tool to encode 7-segment display to bytes:
+https://jasonacox.github.io/TM1637TinyDisplay/examples/7-segment-animator.html
+
+Dumped memory layout (please note MSB is unknown due to missing dp segment in the display):
+# Regular glyphs table (starting with 1 through F, nul terminated):
+06 5b 4f 66
+6d 7d 07 7f
+6f 77 7c 39
+5e 79 71 00
+
+# Registers lookup table (first byte is register number, same as in the protocol, last byte is
+# value with unknown MSB). It's unclear if this is Lookup table (constant in Flash) or
+# configuration (modifiable in EEPROM).
+01 01 00 26 (or A6)
+02 01 00 2e (or AE)
+03 01 00 53 (or D3)
+07 01 00 5b (or DB)
+0d 01 00 36 (or B6)
+0e 01 00 3e (or BE)
+0f 01 00 46 (or C6)
+
+# Lookup table for sequence of bytes in AA 55 0E 22 messages sent to the main unit.
+0d 01 0e 0f
+03 02
+
+# Unused (likely FF, not 7F).
+      7f 7f
+7f 7f 7f 7f
+7f 7f 7f 7f
+7f 7f 7f 7f
+7f

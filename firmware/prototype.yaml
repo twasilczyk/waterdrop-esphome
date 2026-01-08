@@ -149,10 +149,12 @@ interval:
           pC5: std::vector<uint8_t>{0x02, 0x00, 0x00, 0x00, 0x35, 0x08, 0x34, 0x00}
       - script.execute:
           id: send_message
-                                      #                                  1-999
+                                      # TDS: 1-999 value with 1000-9999 displaying as F-codes.
                                       #   ??    ??    ??    ??    ??  |   H     TDS    L      |   ??    ??
           p22: !lambda |-
             return std::vector<uint8_t>{0x03, 0xFF, 0xFF, 0xFF, 0xFF, counterHi(), counterLo(), 0xFF, 0x0C};
+          #p22: !lambda |-
+          #  return std::vector<uint8_t>{0x03, 0xFF, 0xFF, 0xFF, 0xFF, tdsExploitHi(id(hex_b1)), tdsExploitLo(id(hex_b1)), 0xFF, 0x0C};
           pC5: std::vector<uint8_t>{0x03, 0x00, 0x0E, 0x01, 0xB0, 0x00, 0x0A, 0x00}
       - script.execute:
           id: send_message
