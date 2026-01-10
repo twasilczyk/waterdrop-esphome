@@ -143,7 +143,9 @@ interval:
       - script.execute:
           id: send_message
           p22: std::vector<uint8_t>{0x0E, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x11}
-          pC5: std::vector<uint8_t>{0x01, 0x00, 0x40, 0x22, 0x00, 0x00, 0x00, 0x0A} # never changes?
+                                  # A: 00 (rare) or 0A
+                                  #                                             A
+          pC5: std::vector<uint8_t>{0x01, 0x00, 0x40, 0x22, 0x00, 0x00, 0x00, 0x0A}
       - script.execute:
           id: send_message
                                   # CF, RO, CB (H, L): filter total life (when it turns red).
@@ -151,29 +153,37 @@ interval:
           p22: std::vector<uint8_t>{0x0F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFe, 0x99, 0xFF, 0x33}
                                   # A: 00, 34, 35
                                   #                           A
-          pC5: std::vector<uint8_t>{0x02, 0x00, 0x00, 0x00, 0x35, 0x08, 0x34, 0x00} # all except A static?
+          pC5: std::vector<uint8_t>{0x02, 0x00, 0x00, 0x00, 0x35, 0x08, 0x34, 0x00}
       - script.execute:
           id: send_message
                                       # TDS: 1-999 value with 1000-9999 displaying as F-codes.
-                                      #   ??    ??    ??    ??    ??  |   H     TDS    L      |   ??    ??
+                                      # A: 0C or 0E
+                                      #                               |   H     TDS    L      |         A
           p22: !lambda |-
-            return std::vector<uint8_t>{0x03, 0xFF, 0xFF, 0xFF, 0xFF, counterHi(), counterLo(), 0xFF, 0x0C};
+            return std::vector<uint8_t>{0x03, 0x00, 0x00, 0x00, 0x00, counterHi(), counterLo(), 0x00, 0x0C};
           #p22: !lambda |-
           #  return std::vector<uint8_t>{0x03, 0xFF, 0xFF, 0xFF, 0xFF, tdsExploitHi(id(hex_b1)), tdsExploitLo(id(hex_b1)), 0xFF, 0x0C};
-                                  # A: 0E, 19
-                                  #                A
-          pC5: std::vector<uint8_t>{0x03, 0x00, 0x0E, 0x01, 0xB0, 0x00, 0x0A, 0x00} # all except A static?
+                                  # A: 0C, 0E, 0D (rare), 19 (rare)
+                                  # B: 01, 03
+                                  # C: 90, B0
+                                  #               A     B     C
+          pC5: std::vector<uint8_t>{0x03, 0x00, 0x0E, 0x01, 0xB0, 0x00, 0x0A, 0x00}
       - script.execute:
           id: send_message
                                   #        CF, RO, CB (H, L): filter used life. Turns orange at 360 units before red
                                   #       >- CF   -<  >-  RO  -<  >-  CB  <-
           p22: std::vector<uint8_t>{0x02, 0xFE, 0x96, 0xFE, 0x97, 0xFE, 0x98, 0x00, 0x00}
-                                  #             F1/F3
+                                  # A: F1, F3, FF
+                                  # B: F1, F3
+                                  #         A     B
           pC5: std::vector<uint8_t>{0x04, 0xF1, 0xF1, 0x00, 0x00, 0x00, 0x0E, 0xFF}
       - script.execute:
           id: send_message
-          p22: std::vector<uint8_t>{0x0D, 0x00, 0x0A, 0x00, 0x0A, 0x00, 0x0A, 0x00, 0x00} # static?
-                                  # A: 0E, 19
+                                  # A: 0A or 00 (rare) - A always the same and same in 01 and 0D slots
+                                  #               A           A
+         #p22: std::vector<uint8_t>{0x01, 0x00, 0x0A, 0x00, 0x0A, 0x00, 0x0A, 0x00, 0x00}
+          p22: std::vector<uint8_t>{0x0D, 0x00, 0x0A, 0x00, 0x0A, 0x00, 0x0A, 0x00, 0x00}
+                                  # A: 0C, 0E, 0D (rare), 19 (rare) - both A always the same, also matches C5 03 A field
                                   #                      A     A
           pC5: std::vector<uint8_t>{0x05, 0x00, 0x00, 0x0E, 0x0E, 0x00, 0x00, 0x00}
 

@@ -12,10 +12,11 @@ Figured out:
  - Filter life and bounds for 3 separate filters
  - Purge cycle
  - Faucet open/close
+ - Error codes (e.g. E02 + error)
 
 Unknowns:
  - Why faucet displays nothing without connecting to actual water, but works on desk
- - Error codes (e.g. E02 + error)
+ - What happens one of the filters is missing
 
 ###
 # Waterdrop comms
@@ -46,6 +47,16 @@ Protocol:
 
 Commands:
 - cat CH1.txt | cut -d',' -f2 | cut -b 3- | tr '\n' ' ' | sed -e 's/AA 55/\nAA 55/g'
+
+Protocol (command order):
+Event firing up every ~170ms:
+1. Filter sends C2 message (basic state)
+2. Faucet may respond with 22 message, asking for specific slot (0D, 01, 0E, 0F, 03, 02)
+   If it does not, timeout is 80ms (from start to start) to continue with C5 message
+3. Filter respons with 22 message with corresponding slot data
+4. 40ms later (from start of 22 message), filter sends C5 message for slot 01 to 05 (different from 22 slots)
+
+NOTE: 22 and C5 slots don not align - they are 6 and 5 slot cycles, so they are not in sync.
 
 Ch1 (less chatty, probably faucet)
 AA 55 0E 22 CC 00 09 SS 00 00 00 00 HH CS
