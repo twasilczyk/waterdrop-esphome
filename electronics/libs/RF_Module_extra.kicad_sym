@@ -294,7 +294,6 @@
 						)
 					)
 				)
-				(alternate "5V_EN" input line)
 			)
 			(pin power_in line
 				(at 0 -17.78 90)
@@ -331,7 +330,6 @@
 						)
 					)
 				)
-				(alternate "3V3" power_in line)
 			)
 			(pin output line
 				(at 15.24 12.7 180)

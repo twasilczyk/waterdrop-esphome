@@ -191,130 +191,6 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Device:R"
-			(pin_numbers
-				(hide yes)
-			)
-			(pin_names
-				(offset 0)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "R"
-				(at 2.032 0 90)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" "R"
-				(at 0 0 90)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" ""
-				(at -1.778 0 90)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "~"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Description" "Resistor"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "R res resistor"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "R_*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "R_0_1"
-				(rectangle
-					(start -1.016 -2.54)
-					(end 1.016 2.54)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "R_1_1"
-				(pin passive line
-					(at 0 3.81 270)
-					(length 1.27)
-					(name "~"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 0 -3.81 90)
-					(length 1.27)
-					(name "~"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 		(symbol "RF_Module_extra:ESP32-S3-TINY"
 			(exclude_from_sim no)
 			(in_bom yes)
@@ -607,7 +483,6 @@
 							)
 						)
 					)
-					(alternate "5V_EN" input line)
 				)
 				(pin power_in line
 					(at 0 -17.78 90)
@@ -644,7 +519,6 @@
 							)
 						)
 					)
-					(alternate "3V3" power_in line)
 				)
 				(pin output line
 					(at 15.24 12.7 180)
@@ -811,7 +685,7 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "power:+3.3V"
+		(symbol "power:+5V"
 			(power)
 			(pin_numbers
 				(hide yes)
@@ -832,7 +706,7 @@
 					(hide yes)
 				)
 			)
-			(property "Value" "+3.3V"
+			(property "Value" "+5V"
 				(at 0 3.556 0)
 				(effects
 					(font
@@ -858,7 +732,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "Power symbol creates a global label with name \"+3.3V\""
+			(property "Description" "Power symbol creates a global label with name \"+5V\""
 				(at 0 0 0)
 				(effects
 					(font
@@ -876,7 +750,7 @@
 					(hide yes)
 				)
 			)
-			(symbol "+3.3V_0_1"
+			(symbol "+5V_0_1"
 				(polyline
 					(pts
 						(xy -0.762 1.27) (xy 0 2.54)
@@ -914,7 +788,7 @@
 					)
 				)
 			)
-			(symbol "+3.3V_1_1"
+			(symbol "+5V_1_1"
 				(pin power_in line
 					(at 0 0 90)
 					(length 0)
@@ -1139,16 +1013,6 @@
 			(embedded_fonts no)
 		)
 	)
-	(text "TODO: Verify dual-function of 5V/3.3V pins of ESP32 module."
-		(exclude_from_sim no)
-		(at 140.716 76.708 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "bcbef55f-e8f0-43c1-ad79-1866dcd68609")
-	)
 	(junction
 		(at 40.64 35.56)
 		(diameter 0)
@@ -1200,6 +1064,10 @@
 		(uuid "8e28b9c6-6f28-4e43-af58-1b57735876c7")
 	)
 	(no_connect
+		(at 142.24 90.17)
+		(uuid "975007b8-af33-45e6-b0b9-9387fcf33f3c")
+	)
+	(no_connect
 		(at 154.94 110.49)
 		(uuid "a217134f-f08a-4cc7-b7b1-dc006bd26414")
 	)
@@ -1237,16 +1105,6 @@
 	)
 	(wire
 		(pts
-			(xy 137.16 83.82) (xy 137.16 90.17)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "594fd0f2-a2bd-4b74-8cbc-ad80dc9d314a")
-	)
-	(wire
-		(pts
 			(xy 38.1 35.56) (xy 40.64 35.56)
 		)
 		(stroke
@@ -1274,36 +1132,6 @@
 			(type default)
 		)
 		(uuid "7b60bc1e-1ead-4604-b3d8-0238169cb84d")
-	)
-	(wire
-		(pts
-			(xy 135.89 83.82) (xy 137.16 83.82)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "82bfc387-bf01-413c-96a9-710a5a55f848")
-	)
-	(wire
-		(pts
-			(xy 127 85.09) (xy 127 83.82)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "8691bbd5-e503-4dd2-ba75-8201d7401e9e")
-	)
-	(wire
-		(pts
-			(xy 127 83.82) (xy 128.27 83.82)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "d669bb02-2d48-4669-8d06-1788566c6c83")
 	)
 	(symbol
 		(lib_id "power:GND")
@@ -1366,72 +1194,6 @@
 			(project ""
 				(path "/35f74f22-9f08-4dab-aa3a-794dd2e7ee12"
 					(reference "#PWR09")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:+3.3V")
-		(at 142.24 90.17 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "456d4c98-cb8b-4c91-bb1c-69f5c63b0431")
-		(property "Reference" "#PWR07"
-			(at 142.24 93.98 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+3.3V"
-			(at 142.24 85.09 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 142.24 90.17 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 142.24 90.17 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+3.3V\""
-			(at 142.24 90.17 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "4919ef16-cc16-4e07-a1c3-b21e07c4a788")
-		)
-		(instances
-			(project ""
-				(path "/35f74f22-9f08-4dab-aa3a-794dd2e7ee12"
-					(reference "#PWR07")
 					(unit 1)
 				)
 			)
@@ -1572,6 +1334,72 @@
 		)
 	)
 	(symbol
+		(lib_id "power:+5V")
+		(at 137.16 90.17 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "7eef05a3-b36a-4959-959a-e7802ee335e0")
+		(property "Reference" "#PWR07"
+			(at 137.16 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+5V"
+			(at 137.16 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 137.16 90.17 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 137.16 90.17 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+5V\""
+			(at 137.16 90.17 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "813aef1c-adad-4a8a-ae40-dfb51ed15b1f")
+		)
+		(instances
+			(project ""
+				(path "/35f74f22-9f08-4dab-aa3a-794dd2e7ee12"
+					(reference "#PWR07")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "RF_Module_extra:ESP32-S3-TINY")
 		(at 139.7 107.95 0)
 		(unit 1)
@@ -1660,7 +1488,6 @@
 		)
 		(pin "3"
 			(uuid "aa7cbb66-da39-45b9-a1e1-f91679d8c363")
-			(alternate "3V3")
 		)
 		(pin "10"
 			(uuid "f9324605-04d6-4eeb-9cb3-4ab62877e6ee")
@@ -1679,7 +1506,6 @@
 		)
 		(pin "1"
 			(uuid "481d0063-f246-4380-ab24-444c083810a1")
-			(alternate "5V_EN")
 		)
 		(pin "7"
 			(uuid "527a158b-8d9b-4905-b7d6-79bd97b0e935")
@@ -1700,72 +1526,6 @@
 			(project ""
 				(path "/35f74f22-9f08-4dab-aa3a-794dd2e7ee12"
 					(reference "U2")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 127 85.09 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "a9b94936-4a0d-4922-89c5-df43a4350964")
-		(property "Reference" "#PWR08"
-			(at 127 91.44 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 127 90.17 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 127 85.09 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 127 85.09 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 127 85.09 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "00898f59-f3ab-4315-88e4-52d163d8e18b")
-		)
-		(instances
-			(project ""
-				(path "/35f74f22-9f08-4dab-aa3a-794dd2e7ee12"
-					(reference "#PWR08")
 					(unit 1)
 				)
 			)
@@ -1833,73 +1593,6 @@
 			(project ""
 				(path "/35f74f22-9f08-4dab-aa3a-794dd2e7ee12"
 					(reference "#FLG03")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 132.08 83.82 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "eb82d30c-038f-483a-a438-a27442eff665")
-		(property "Reference" "R3"
-			(at 132.08 86.36 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "100k"
-			(at 132.08 81.28 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder"
-			(at 132.08 85.598 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 132.08 83.82 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Resistor"
-			(at 132.08 83.82 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "ba71bd71-6b2f-4d79-a58f-ee119321d26c")
-		)
-		(pin "1"
-			(uuid "079484b1-12ff-4342-ae96-c0fe572af364")
-		)
-		(instances
-			(project ""
-				(path "/35f74f22-9f08-4dab-aa3a-794dd2e7ee12"
-					(reference "R3")
 					(unit 1)
 				)
 			)
