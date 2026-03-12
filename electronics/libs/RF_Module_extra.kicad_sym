@@ -15,7 +15,7 @@
 			)
 		)
 		(property "Value" "ESP32-S3-Tiny"
-			(at 12.7 16.256 0)
+			(at 13.716 16.256 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -278,7 +278,7 @@
 				)
 			)
 			(pin power_in line
-				(at -2.54 17.78 270)
+				(at -3.81 17.78 270)
 				(length 2.54)
 				(name "5V"
 					(effects
@@ -314,7 +314,7 @@
 				)
 			)
 			(pin power_out line
-				(at 2.54 17.78 270)
+				(at 3.81 17.78 270)
 				(length 2.54)
 				(name "3V3_OUT"
 					(effects

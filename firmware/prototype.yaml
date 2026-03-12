@@ -191,7 +191,8 @@ uart:
   id: uart_bus
   tx_pin:
     number: GPIO5
-    inverted: true
+    #inverted: true
+    inverted: false
   rx_pin: GPIO6
   baud_rate: 9600
   debug:

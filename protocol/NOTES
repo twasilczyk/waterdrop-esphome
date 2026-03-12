@@ -34,7 +34,8 @@ Protocol (electrical):
  - less chatty: sharply to 3.5v, slowly to 5v
  - more chatty: sharply to 5v
  - test circuit:
-   TX: 2kOhm to TLP785 + 10k pull-up to 5V
+   TX: 2kOhm to TLP785 + 10k pull-up to 5V (requires TX inversion)
+       OR: SN54AHCT125 directly connected with OE bound to GND
    RX: resistor divider 100k/50k + 10k pull-up to 5V
 
 Protocol:
