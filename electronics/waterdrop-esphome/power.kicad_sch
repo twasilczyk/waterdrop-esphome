@@ -6,7 +6,7 @@
 	(paper "USLetter")
 	(title_block
 		(title "waterdrop-esphome – Power supply")
-		(date "2026-01-10")
+		(date "2026-03-13")
 		(rev "0.0.1")
 		(company "Tomasz Wasilczyk")
 	)
