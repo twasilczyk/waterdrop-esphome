@@ -5826,7 +5826,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "MountingHole:MountingHole_4.3mm_M4"
+		(property "Footprint" "MountingHole_extra:MountingHole_4.3mm"
 			(at 41.91 96.52 0)
 			(effects
 				(font
@@ -6875,6 +6875,70 @@
 			(project ""
 				(path "/35f74f22-9f08-4dab-aa3a-794dd2e7ee12"
 					(reference "R14")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Mechanical:MountingHole")
+		(at 246.38 25.4 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "6f7d2e03-67d4-4a67-849a-c71f35da1581")
+		(property "Reference" "H4"
+			(at 248.92 24.1299 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "MountingHole"
+			(at 248.92 26.6699 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "MountingHole:MountingHole_4.3mm_M4"
+			(at 246.38 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 246.38 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Mounting Hole without connection"
+			(at 246.38 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(instances
+			(project ""
+				(path "/35f74f22-9f08-4dab-aa3a-794dd2e7ee12"
+					(reference "H4")
 					(unit 1)
 				)
 			)
@@ -8215,6 +8279,70 @@
 		)
 	)
 	(symbol
+		(lib_id "Mechanical:MountingHole")
+		(at 246.38 19.05 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "b665dfe2-0638-4a1f-841a-0b0c0ba7046e")
+		(property "Reference" "H3"
+			(at 248.92 17.7799 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "MountingHole"
+			(at 248.92 20.3199 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "MountingHole:MountingHole_4.3mm_M4"
+			(at 246.38 19.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 246.38 19.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Mounting Hole without connection"
+			(at 246.38 19.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(instances
+			(project ""
+				(path "/35f74f22-9f08-4dab-aa3a-794dd2e7ee12"
+					(reference "H3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 55.88 191.77 0)
 		(unit 1)
@@ -8812,7 +8940,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "MountingHole:MountingHole_4.3mm_M4"
+		(property "Footprint" "MountingHole_extra:MountingHole_4.3mm"
 			(at 44.45 63.5 0)
 			(effects
 				(font
