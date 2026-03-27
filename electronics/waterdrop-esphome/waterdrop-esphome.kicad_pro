@@ -519,7 +519,17 @@
       "version": 4
     },
     "net_colors": null,
-    "netclass_assignments": null,
+    "netclass_assignments": {
+      "Net-(C2-Pad1)": [
+        "Power"
+      ],
+      "Net-(D2-K)": [
+        "Power"
+      ],
+      "Net-(JP1-A)": [
+        "Power"
+      ]
+    },
     "netclass_patterns": [
       {
         "netclass": "Power",
@@ -536,6 +546,10 @@
       {
         "netclass": "HiPower",
         "pattern": "/12V_OUT"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "/VALVE_OUT*"
       }
     ]
   },
