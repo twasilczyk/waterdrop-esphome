@@ -15,10 +15,12 @@ _autosave-*
 *.sch-bak
 
 # firmware
+.codex
 .esphome
 
 # python
 __pycache__
+.venv
 
 # project temporary files
 media-room-controller-board.step

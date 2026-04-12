@@ -1,0 +1,16 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "ESPHome: Run without debugging",
+      "type": "process",
+      "command": "${workspaceFolder}/.venv/bin/esphome",
+      "args": ["run", "${workspaceFolder}/firmware/waterdrop-esphome.yaml"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    }
+  ]
+}
