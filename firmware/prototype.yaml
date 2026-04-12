@@ -29,6 +29,9 @@ esp32:
     type: esp-idf
 
 logger:
+  logs:
+    script: WARN
+    text_sensor: WARN
 
 api:
   encryption:
@@ -49,6 +52,28 @@ wifi:
         green: 100%
         blue: 0%
         brightness: 20%
+
+switch:
+  - platform: gpio
+    name: "Filter power"
+    pin: GPIO1
+    id: filter_power
+    inverted: true
+    restore_mode: RESTORE_DEFAULT_OFF
+  - platform: gpio
+    name: "Serial enabled"
+    pin: GPIO2
+    id: serial_enabled
+    inverted: true
+    restore_mode: ALWAYS_ON
+  - platform: gpio
+    name: "ESP32 GPIO12 Switch"
+    pin: GPIO12
+    id: relay_12
+  - platform: gpio
+    name: "ESP32 GPIO13 Switch"
+    pin: GPIO13
+    id: relay_13
 
 script:
   - id: send_frame
@@ -96,7 +121,6 @@ script:
       pC5: std::vector<uint8_t>
 
     then:
-      - logger.log: "Waterdrop Message"
       - script.execute:
           id: send_frame
           command: 0xC2
@@ -188,20 +212,26 @@ interval:
           pC5: std::vector<uint8_t>{0x05, 0x00, 0x00, 0x0E, 0x0E, 0x00, 0x00, 0x00}
 
 uart:
-  id: uart_bus
-  tx_pin:
-    number: GPIO5
-    #inverted: true
-    inverted: false
-  rx_pin: GPIO6
-  baud_rate: 9600
-  debug:
-    direction: BOTH
-    dummy_receiver: true
+  - id: uart_bus
+    tx_pin: GPIO5
+    rx_pin: GPIO6
+    baud_rate: 9600
+    #debug:
+    #  direction: BOTH
+    #  dummy_receiver: true
+  - id: uart_ro
+    tx_pin:
+      number: GPIO3
+      ignore_strapping_warning: true  # Safe: GPIO3 is output only
+    rx_pin: GPIO4
+    baud_rate: 9600
+    debug:
+      direction: BOTH
+      dummy_receiver: true
 
 light:
   - platform: esp32_rmt_led_strip
-    pin: GPIO21
+    pin: GPIO38
     num_leds: 1
     chipset: ws2812
     rgb_order: RGB
