@@ -6,6 +6,9 @@
       "type": "process",
       "command": "${workspaceFolder}/.venv/bin/esphome",
       "args": ["run", "${workspaceFolder}/firmware/waterdrop-esphome.yaml"],
+      "runOptions": {
+        "instanceLimit": 1
+      },
       "presentation": {
         "reveal": "always",
         "panel": "dedicated"

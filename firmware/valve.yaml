@@ -1,0 +1,65 @@
+substitutions:
+  valve_pulse_duration: 10ms  # measured minimum for reliable operation: 2ms
+  valve_cooldown: 1s
+
+switch:
+  - platform: gpio
+    id: valve_in1
+    pin: GPIO12
+    restore_mode: ALWAYS_OFF
+    interlock: [valve_in2]
+  - platform: gpio
+    id: valve_in2
+    pin: GPIO13
+    restore_mode: ALWAYS_OFF
+    interlock: [valve_in1]
+
+valve:
+  - platform: template
+    id: input_water_valve
+    name: "Input water valve"
+    device_class: water
+    optimistic: true
+    restore_mode: RESTORE_AND_CALL
+    open_action:
+      - script.execute:
+          id: valve_pulse
+          open: true
+    close_action:
+      - script.execute:
+          id: valve_pulse
+          open: false
+
+script:
+  - id: valve_pulse
+    mode: single
+    parameters:
+      open: bool
+    then:
+      - if:
+          condition:
+            lambda: 'return open;'
+          then:
+            - valve.template.publish:
+                id: input_water_valve
+                current_operation: OPENING
+            - switch.turn_on: valve_in1
+            - delay: ${valve_pulse_duration}
+            - switch.turn_off: valve_in1
+            - delay: ${valve_cooldown}
+            - valve.template.publish:
+                id: input_water_valve
+                state: OPEN
+                current_operation: IDLE
+          else:
+            - valve.template.publish:
+                id: input_water_valve
+                current_operation: CLOSING
+            - switch.turn_on: valve_in2
+            - delay: ${valve_pulse_duration}
+            - switch.turn_off: valve_in2
+            - delay: ${valve_cooldown}
+            - valve.template.publish:
+                id: input_water_valve
+                state: CLOSED
+                current_operation: IDLE
