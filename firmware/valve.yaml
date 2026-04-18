@@ -1,6 +1,6 @@
 substitutions:
   valve_pulse_duration: 10ms  # measured minimum for reliable operation: 2ms
-  valve_cooldown: 1s
+  valve_cooldown: 0.5s
 
 switch:
   - platform: gpio

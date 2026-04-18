@@ -1,0 +1,47 @@
+substitutions:
+  status_led_brightness: 20%
+  status_led_delay_ms: 10
+
+light:
+  - platform: esp32_rmt_led_strip
+    id: status_led
+    name: "Status LED"
+    pin: GPIO38
+    num_leds: 1
+    chipset: ws2812
+    rgb_order: RGB
+    default_transition_length: 0s
+    restore_mode: ALWAYS_OFF
+
+esphome:
+  on_boot:
+    # Early boot: red
+    - priority: 10
+      then:
+        - light.turn_on:
+            id: status_led
+            brightness: ${status_led_brightness}
+            red: 100%
+            green: 0%
+            blue: 0%
+    # Hardware ready: orange
+    - priority: 1000
+      then:
+        - delay: ${status_led_delay_ms}ms
+        - light.turn_on:
+            id: status_led
+            brightness: ${status_led_brightness}
+            red: 100%
+            green: 60%
+            blue: 0%
+
+# Wi-Fi connected: green
+wifi:
+  on_connect:
+    - delay: ${status_led_delay_ms * 2}ms
+    - light.turn_on:
+        id: status_led
+        red: 0%
+        green: 100%
+        blue: 0%
+        brightness: ${status_led_brightness}
