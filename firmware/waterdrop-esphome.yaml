@@ -7,6 +7,11 @@ esp32:
   framework:
     type: esp-idf
 
+external_components:
+  - source:
+      type: local
+      path: components
+
 packages:
   powerctrl: !include powerctrl.yaml
   serial: !include serial.yaml

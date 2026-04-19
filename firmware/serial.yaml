@@ -12,7 +12,7 @@ switch:
     restore_mode: ALWAYS_ON
 
 uart:
-  - id: uart_bus
+  - id: uart_faucet
     tx_pin: GPIO5
     rx_pin: GPIO6
     baud_rate: 9600
@@ -22,9 +22,10 @@ uart:
       ignore_strapping_warning: true  # Safe: GPIO3 is output only
     rx_pin: GPIO4
     baud_rate: 9600
-    debug:
-      direction: BOTH
-      dummy_receiver: true
+
+waterdrop_serial_ro:
+  id: waterdrop_ro
+  uart_id: uart_ro
 
 script:
   - id: send_frame
@@ -63,7 +64,7 @@ script:
           }
           frame.push_back(frame_checksum);
 
-          id(uart_bus).write_array(frame.data(), frame.size());
+          id(uart_faucet).write_array(frame.data(), frame.size());
 
   - id: send_message
     mode: queued
@@ -113,7 +114,7 @@ script:
       - delay: 40ms
 
 interval:
-  - interval: 1000ms
+  - interval: 5000ms
     then:
       - script.execute:
           id: send_message
