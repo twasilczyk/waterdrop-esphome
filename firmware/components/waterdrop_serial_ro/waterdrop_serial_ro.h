@@ -1,16 +1,14 @@
 #pragma once
 
-#include "esphome/components/uart/uart.h"
-#include "esphome/core/component.h"
-#include "frame.h"
+#include "esphome/components/waterdrop_serial/frame.h"
+#include "esphome/components/waterdrop_serial/waterdrop_serial.h"
 
-namespace esphome::waterdrop_serial_ro {
+namespace esphome::waterdrop_serial::ro {
 
-class WaterdropSerialRo : public Component, private uart::UARTDevice {
+class WaterdropSerialRo : public WaterdropSerial {
  public:
   void loop() override;
   void dump_config() override;
-  using uart::UARTDevice::set_uart_parent;
 
  private:
   void handle_frame_(const frame::Frame &frame);
@@ -18,4 +16,4 @@ class WaterdropSerialRo : public Component, private uart::UARTDevice {
   frame::Parser parser_{};
 };
 
-}  // namespace esphome::waterdrop_serial_ro
+}  // namespace esphome::waterdrop_serial::ro

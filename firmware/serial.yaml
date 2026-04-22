@@ -27,45 +27,11 @@ waterdrop_serial_ro:
   id: waterdrop_ro
   uart_id: uart_ro
 
+waterdrop_serial_faucet:
+  id: waterdrop_faucet
+  uart_id: uart_faucet
+
 script:
-  - id: send_frame
-    mode: queued
-    parameters:
-      command: uint8_t
-      payload: std::vector<uint8_t>
-    then:
-      - lambda: |-
-          auto checksum = [](const std::vector<uint8_t> &bytes) -> uint8_t {
-            uint8_t s = 0;
-            for (auto b : bytes) s += b;
-            return s;
-          };
-
-          static std::vector<uint8_t> frame;
-          frame.clear();
-          frame.reserve(payload.size() + 5);
-
-          frame.push_back(0xAA);
-          frame.push_back(0x55);
-          bool payload_checksum = false;
-          if (command == 0xC2 || command == 0x22) payload_checksum = true;
-
-          uint8_t len = payload.size() + 5 + (payload_checksum ? 1 : 0);
-          frame.push_back(len);
-          frame.push_back(command);
-
-          frame.insert(frame.end(), payload.begin(), payload.end());
-
-          uint8_t frame_checksum = checksum(frame);
-          if (payload_checksum) {
-            uint8_t payload_checksum = checksum(payload);
-            if (command == 0x22) payload_checksum -= payload[0];
-            frame.push_back(payload_checksum);
-          }
-          frame.push_back(frame_checksum);
-
-          id(uart_faucet).write_array(frame.data(), frame.size());
-
   - id: send_message
     mode: queued
     parameters:
@@ -73,44 +39,36 @@ script:
       pC5: std::vector<uint8_t>
 
     then:
-      - script.execute:
-          id: send_frame
-          command: 0xC2
-                                      # STATE:
-                                      #  Boot: FF
-                                      #  Screen on: F1, F7
-                                      #  Flush: F3, F5, F6
-                                      #  Screen off: all others
+      - lambda: |-
+          // STATE:
+          //  Boot: FF
+          //  Screen on: F1, F7
+          //  Flush: F3, F5, F6
+          //  Screen off: all others
 
-                                      # FLG2: no effect
-                                      #  0x03 - regular
-                                      #  0x01 - present during flush and boot
+          // FLG2: no effect
+          //  0x03 - regular
+          //  0x01 - present during flush and boot
 
-                                      # ERR:
-                                      #  Display priority: E02 > E03 > E04 > E01
-                                      #  0b00000100: E02
-                                      #  0b00000001: E03
-                                      #  0b00000010: E04
-                                      #  0b10000000: E01
+          // ERR:
+          //  Display priority: E02 > E03 > E04 > E01
+          //  0b00000100: E02
+          //  0b00000001: E03
+          //  0b00000010: E04
+          //  0b10000000: E01
 
-                                     # STATE   FLG   ERR
-          payload: std::vector<uint8_t>{0xF1, 0x03, 0x00}
-          #payload: !lambda |-
-          #  return std::vector<uint8_t>{0xF1, counterLo(), 0x00};
-          #payload: !lambda |-
-          #  return std::vector<uint8_t>{bflip(0xF1, 0, id(hex_b1)), bflip(0x03, 1, id(hex_b1)), bflip(0x00, 2, id(hex_b1))};
+          //                                                        STATE   FLG   ERR
+          id(waterdrop_faucet).send_frame(0xC2, std::vector<uint8_t>{0xF1, 0x03, 0x00});
+          // id(waterdrop_faucet).send_frame(0xC2, std::vector<uint8_t>{0xF1, counterLo(), 0x00});
+          // id(waterdrop_faucet).send_frame(
+          //     0xC2,
+          //     std::vector<uint8_t>{bflip(0xF1, 0, id(hex_b1)), bflip(0x03, 1, id(hex_b1)), bflip(0x00, 2, id(hex_b1))});
       - delay: 40ms
-      - script.execute:
-          id: send_frame
-          command: 0x22
-          payload: !lambda |-
-            return p22;
+      - lambda: |-
+          id(waterdrop_faucet).send_frame(0x22, p22);
       - delay: 30ms
-      - script.execute:
-          id: send_frame
-          command: 0xC5
-          payload: !lambda |-
-            return pC5;
+      - lambda: |-
+          id(waterdrop_faucet).send_frame(0xC5, pC5);
       - delay: 40ms
 
 interval:

@@ -2,11 +2,8 @@
 #include "waterdrop_serial_ro.h"
 
 #include "esphome/core/log.h"
-#ifdef USE_ESP32
-#include "esphome/components/uart/uart_component_esp_idf.h"
-#endif
 
-namespace esphome::waterdrop_serial_ro {
+namespace esphome::waterdrop_serial::ro {
 
 static const char *const TAG = "waterdrop_serial_ro";
 static constexpr int READ_BUDGET_PER_LOOP = 64;
@@ -30,13 +27,7 @@ void WaterdropSerialRo::loop() {
 
 void WaterdropSerialRo::dump_config() {
   ESP_LOGCONFIG(TAG, "Waterdrop Serial RO:");
-
-#ifdef USE_ESP32
-  if (parent_ != nullptr) {
-    auto idf_uart = static_cast<uart::IDFUARTComponent *>(parent_);
-    ESP_LOGCONFIG(TAG, "  UART Bus: %u", idf_uart->get_hw_serial_number());
-  }
-#endif
+  WaterdropSerial::dump_base_config(TAG);
 
   const auto &counters = parser_.counters();
   ESP_LOGCONFIG(TAG,
@@ -52,7 +43,7 @@ void WaterdropSerialRo::dump_config() {
 }
 
 void WaterdropSerialRo::handle_frame_(const frame::Frame &frame) {
-  ESP_LOGD(TAG, "RX %s", frame.toString().c_str());
+  ESP_LOGD(TAG, "RX %s", frame.to_string().c_str());
 }
 
-}  // namespace esphome::waterdrop_serial_ro
+}  // namespace esphome::waterdrop_serial::ro

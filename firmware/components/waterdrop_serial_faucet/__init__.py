@@ -5,20 +5,19 @@ from esphome.components import waterdrop_serial
 AUTO_LOAD = ["waterdrop_serial"]
 CODEOWNERS = ["@twasilczyk"]
 DEPENDENCIES = waterdrop_serial.DEPENDENCIES
-AUTO_LOAD = ["cxxflags"]
 
-waterdrop_serial_ro_ns = waterdrop_serial.waterdrop_serial_ns.namespace("ro")
-WaterdropSerialRo = waterdrop_serial_ro_ns.class_(
-    "WaterdropSerialRo", waterdrop_serial.WaterdropSerial
+waterdrop_serial_faucet_ns = waterdrop_serial.waterdrop_serial_ns.namespace("faucet")
+WaterdropSerialFaucet = waterdrop_serial_faucet_ns.class_(
+    "WaterdropSerialFaucet", waterdrop_serial.WaterdropSerial
 )
 
 CONFIG_SCHEMA = cv.Schema(
     {
-        cv.GenerateID(): cv.declare_id(WaterdropSerialRo),
+        cv.GenerateID(): cv.declare_id(WaterdropSerialFaucet),
     }
 ).extend(waterdrop_serial.WATERDROP_SERIAL_SCHEMA)
 
-FINAL_VALIDATE_SCHEMA = waterdrop_serial.uart_final_validate_schema("waterdrop_serial_ro")
+FINAL_VALIDATE_SCHEMA = waterdrop_serial.uart_final_validate_schema("waterdrop_serial_faucet")
 
 
 async def to_code(config):
