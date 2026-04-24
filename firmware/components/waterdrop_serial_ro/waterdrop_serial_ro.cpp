@@ -1,3 +1,4 @@
+#include <cxxflags.inc>
 #include "waterdrop_serial_ro.h"
 
 #include "esphome/core/log.h"

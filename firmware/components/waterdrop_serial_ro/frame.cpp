@@ -1,3 +1,4 @@
+#include <cxxflags.inc>
 #include "frame.h"
 
 #include <algorithm>
@@ -24,6 +25,7 @@ static PayloadChecksum payload_checksum_for(Command command) {
       return PayloadChecksum::SHORT;
   }
 
+  assert(false);
   return PayloadChecksum::NONE;
 }
 

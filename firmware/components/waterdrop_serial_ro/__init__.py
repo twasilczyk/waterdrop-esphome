@@ -5,6 +5,7 @@ from esphome.const import CONF_ID, CONF_UART_ID
 
 CODEOWNERS = ["@twasilczyk"]
 DEPENDENCIES = ["uart"]
+AUTO_LOAD = ["cxxflags"]
 
 waterdrop_serial_ro_ns = cg.esphome_ns.namespace("waterdrop_serial_ro")
 WaterdropSerialRo = waterdrop_serial_ro_ns.class_(
