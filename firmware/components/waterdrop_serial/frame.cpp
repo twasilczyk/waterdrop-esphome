@@ -34,20 +34,49 @@ enum class PayloadChecksum : uint8_t {
   LONG,
 };
 
-static PayloadChecksum payload_checksum_for(Command command) {
+static bool is_valid(Source source, Command command) {
+  switch (source) {
+    case Source::RO:
+      switch (command) {
+        case Command::COMMAND_C2:
+        case Command::COMMAND_C5:
+        case Command::COMMAND_22:
+          return true;
+      }
+      return false;
+    case Source::FAUCET:
+      switch (command) {
+        case Command::COMMAND_22:
+          return true;
+        case Command::COMMAND_C2:
+        case Command::COMMAND_C5:
+          return false;
+      }
+      return false;
+  }
+  assert(false);
+}
+
+static PayloadChecksum payload_checksum_for(Source source, Command command) {
   switch (command) {
     case Command::COMMAND_C2:
       return PayloadChecksum::LONG;
     case Command::COMMAND_22:
-      return PayloadChecksum::SHORT;
+      switch (source) {
+        case Source::RO:
+          return PayloadChecksum::SHORT;
+        case Source::FAUCET:
+          return PayloadChecksum::LONG;
+      }
+      assert(false);
     case Command::COMMAND_C5:
       return PayloadChecksum::NONE;
   }
   assert(false);
 }
 
-static uint8_t frame_overhead_for(Command command) {
-  return payload_checksum_for(command) == PayloadChecksum::NONE ?
+static uint8_t frame_overhead_for(Source source, Command command) {
+  return payload_checksum_for(source, command) == PayloadChecksum::NONE ?
       FRAME_OVERHEAD_A : FRAME_OVERHEAD_B;
 }
 
@@ -65,7 +94,7 @@ uint8_t Frame::get_checksum_base() const {
 }
 
 std::optional<uint8_t> Frame::get_payload_checksum(uint8_t checksum_base) const {
-  switch (payload_checksum_for(command)) {
+  switch (payload_checksum_for(source, command)) {
     case PayloadChecksum::NONE:
       return std::nullopt;
     case PayloadChecksum::SHORT:
@@ -77,15 +106,16 @@ std::optional<uint8_t> Frame::get_payload_checksum(uint8_t checksum_base) const 
 }
 
 uint8_t Frame::get_frame_checksum(uint8_t checksum_base) const {
-  return 0xAA + 0x55 + frame_overhead_for(command) + payload_length + static_cast<uint8_t>(command)
-      + checksum_base;
+  return 0xAA + 0x55 + frame_overhead_for(source, command) + payload_length
+      + static_cast<uint8_t>(command) + checksum_base;
 }
 
 void Frame::write(uart::UARTDevice &uart) const {
+  assert(is_valid(source, command));
   assert(payload_length <= payload.size());
 
   static Header header;
-  header.s.length = payload_length + frame_overhead_for(command);
+  header.s.length = payload_length + frame_overhead_for(source, command);
   header.s.command = command;
 
   uart.write_array(header.raw, sizeof(header));
@@ -98,6 +128,8 @@ void Frame::write(uart::UARTDevice &uart) const {
   };
   uart.write_byte(get_frame_checksum(checksum_base));
 }
+
+Parser::Parser(Source source) : source_(source) {}
 
 const Counters &Parser::counters() const {
   return counters_;
@@ -154,12 +186,19 @@ void Parser::log_invalid_frame_(const char *error_message) const {
 }
 
 bool Parser::finish_(Frame &frame) {
+  frame.source = source_;
   assert(length_current_ >= FRAME_OVERHEAD_A - FRAME_PREAMBLE_LENGTH);
   frame.command = static_cast<Command>(body_[0]);
+  if (!is_valid(source_, frame.command)) {
+    counters_.invalid_command++;
+    counters_.last_invalid_command = static_cast<uint8_t>(frame.command);
+    log_invalid_frame_("invalid command");
+    return false;
+  }
 
-  const uint8_t frame_net_overhead = frame_overhead_for(frame.command) - FRAME_PREAMBLE_LENGTH;
-  frame.payload_length = length_current_ - frame_net_overhead;
-  if (frame_net_overhead > length_current_ || frame.payload_length > frame.payload.size()) {
+  const uint8_t net_overhead = frame_overhead_for(source_, frame.command) - FRAME_PREAMBLE_LENGTH;
+  frame.payload_length = length_current_ - net_overhead;
+  if (net_overhead > length_current_ || frame.payload_length > frame.payload.size()) {
     counters_.invalid_lengths++;
     log_invalid_frame_("invalid length");
     return false;

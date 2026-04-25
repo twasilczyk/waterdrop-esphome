@@ -7,13 +7,11 @@ namespace esphome::waterdrop_serial::ro {
 
 class WaterdropSerialRo : public WaterdropSerial {
  public:
-  void loop() override;
+  WaterdropSerialRo();
   void dump_config() override;
 
  private:
-  void handle_frame_(const frame::Frame &frame);
-
-  frame::Parser parser_{};
+  void handle_frame_(const frame::Frame &frame) override;
 };
 
 }  // namespace esphome::waterdrop_serial::ro

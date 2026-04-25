@@ -8,6 +8,23 @@
 
 namespace esphome::waterdrop_serial {
 
+WaterdropSerial::WaterdropSerial(frame::Source source) : parser_(source) {}
+
+void WaterdropSerial::loop() {
+  int budget = 2 * frame::_details::FRAME_MAX_LENGTH;
+
+  while (budget-- > 0 && available()) {
+    uint8_t byte;
+    if (!read_byte(&byte)) break;
+
+    frame::Frame parsed_frame;
+    if (parser_.feed(byte, parsed_frame)) {
+      // TODO: handle_frame in message.h Parser, then call handle_message_ here
+      handle_frame_(parsed_frame);
+    }
+  }
+}
+
 void WaterdropSerial::dump_base_config(const char *tag) const {
 #ifdef USE_ESP32
   if (parent_ != nullptr) {
@@ -15,6 +32,17 @@ void WaterdropSerial::dump_base_config(const char *tag) const {
     ESP_LOGCONFIG(tag, "  UART Bus: %u", idf_uart->get_hw_serial_number());
   }
 #endif
+
+  const auto &counters = parser_.counters();
+  ESP_LOGCONFIG(tag, "  Counters:");
+  ESP_LOGCONFIG(tag, "    RX bytes: %zu", counters.rx_bytes);
+  ESP_LOGCONFIG(tag, "    Correct frames: %zu", counters.frames_ok);
+  ESP_LOGCONFIG(tag, "    Junk bytes: %zu", counters.rx_junk_bytes);
+  ESP_LOGCONFIG(tag, "    Invalid lengths: %zu", counters.invalid_lengths);
+  ESP_LOGCONFIG(tag, "    Invalid payload checksums: %zu", counters.invalid_checksum_payload);
+  ESP_LOGCONFIG(tag, "    Invalid frame checksums: %zu", counters.invalid_checksum_frame);
+  ESP_LOGCONFIG(tag, "    Invalid commands: %zu (last: 0x%02X)", counters.invalid_command,
+      counters.last_invalid_command);
 }
 
 }  // namespace esphome::waterdrop_serial

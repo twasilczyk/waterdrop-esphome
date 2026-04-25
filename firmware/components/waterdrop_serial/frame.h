@@ -22,6 +22,11 @@ static constexpr size_t FRAME_MAX_LENGTH = PAYLOAD_MAX_LENGTH + FRAME_OVERHEAD_B
 
 }  // namespace _details
 
+enum class Source : uint8_t {
+  RO = 1,
+  FAUCET,
+};
+
 enum class Command : uint8_t {
   COMMAND_22 = 0x22,
   COMMAND_C2 = 0xC2,
@@ -29,6 +34,7 @@ enum class Command : uint8_t {
 };
 
 struct Frame {
+  Source source;
   Command command;
   uint8_t payload_length;
   std::array<uint8_t, _details::PAYLOAD_MAX_LENGTH> payload;
@@ -47,10 +53,14 @@ struct Counters {
   size_t invalid_lengths;
   size_t invalid_checksum_payload;
   size_t invalid_checksum_frame;
+  size_t invalid_command;
+  uint8_t last_invalid_command;
 };
 
 class Parser {
  public:
+  Parser(Source source);
+
   const Counters &counters() const;
   bool feed(uint8_t byte, Frame &frame);
 
@@ -65,6 +75,7 @@ class Parser {
   bool finish_(Frame &frame);
   void log_invalid_frame_(const char *error_message) const;
 
+  Source source_;
   Counters counters_{};
   State state_ = State::WAIT_AA;
   uint8_t length_expected_;
