@@ -57,6 +57,16 @@ Event firing up every ~170ms:
 3. Filter respons with 22 message with corresponding slot data
 4. 40ms later (from start of 22 message), filter sends C5 message for slot 01 to 05 (different from 22 slots)
 
+Timing:
+- Communication loops (originated from RO) are every 170ms
+- Probing iterations: C2 (ro) -> C5 (ro)
+  - 80ms start-to-start
+- Full iterations (with faucet): C2 (ro) -> 22 (f) -> 22 (ro) -> C5 (ro)
+  - C2 -> C5 start-to-start still 80ms
+  - C2 (end) -> 22 (start): faucet response time 12ms
+  - 22 (f end) -> 22 (ro start): ro response time 4ms
+  - 22 (ro end) -> C5 (ro start): ro wrap up budget 22ms
+
 NOTE: 22 and C5 slots don not align - they are 6 and 5 slot cycles, so they are not in sync.
 
 Ch1 (less chatty, probably faucet)
