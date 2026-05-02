@@ -8,11 +8,14 @@ namespace esphome::waterdrop_serial::faucet {
 using namespace std::chrono_literals;
 
 static const char *const TAG = "waterdrop_serial_faucet";
+static constexpr std::chrono::milliseconds MIN_FRAME_SEPARATION = 11ms;
 
 WaterdropSerialFaucet::WaterdropSerialFaucet() : WaterdropSerial(frame::Source::FAUCET) {}
 
 void WaterdropSerialFaucet::loop() {
   WaterdropSerial::loop();
+
+  ensure_frame_separation_();
 
   const auto now = std::chrono::steady_clock::now();
   if (now >= next_command_at_) {
@@ -31,6 +34,18 @@ void WaterdropSerialFaucet::loop() {
         assert(false);
     }
   }
+}
+
+void WaterdropSerialFaucet::ensure_frame_separation_() {
+  if (is_tx_idle()) {
+    if (!was_busy_) return;
+    // We don't know when TX became idle, so consider we just finished transmition.
+    was_busy_ = false;
+  } else {
+    was_busy_ = true;
+  }
+  next_command_at_ = std::max(next_command_at_,
+      std::chrono::steady_clock::now() + MIN_FRAME_SEPARATION);
 }
 
 void WaterdropSerialFaucet::send_c2_() {
@@ -97,6 +112,7 @@ void WaterdropSerialFaucet::send_frame(frame::Command command, const std::vector
   std::copy(payload.begin(), payload.end(), frame.payload.begin());
 
   frame.write(*this);
+  ensure_frame_separation_();
 }
 
 }  // namespace esphome::waterdrop_serial::faucet

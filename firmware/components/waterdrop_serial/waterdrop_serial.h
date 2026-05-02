@@ -15,6 +15,7 @@ class WaterdropSerial : public Component, protected uart::UARTDevice {
  protected:
   virtual void handle_frame_(const frame::Frame &frame) = 0;
   void dump_base_config(const char *tag) const;
+  bool is_tx_idle() const;
 
  private:
   frame::Parser parser_;

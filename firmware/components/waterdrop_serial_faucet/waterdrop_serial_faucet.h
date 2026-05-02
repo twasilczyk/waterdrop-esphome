@@ -18,6 +18,7 @@ class WaterdropSerialFaucet : public WaterdropSerial {
 
  private:
   void handle_frame_(const frame::Frame &frame) override;
+  void ensure_frame_separation_();
 
   // TODO: remove
   void send_frame(frame::Command command, const std::vector<uint8_t> &payload);
@@ -27,6 +28,7 @@ class WaterdropSerialFaucet : public WaterdropSerial {
 
   frame::Command next_command_ = frame::Command::COMMAND_C2;
   std::chrono::steady_clock::time_point next_command_at_ = {};
+  bool was_busy_ = false;
 
   uint8_t cc5_counter_ = 0;
   std::vector<std::vector<uint8_t>> cc5_data_{

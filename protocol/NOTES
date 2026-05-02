@@ -66,6 +66,7 @@ Timing:
   - C2 (end) -> 22 (start): faucet response time 12ms
   - 22 (f end) -> 22 (ro start): ro response time 4ms
   - 22 (ro end) -> C5 (ro start): ro wrap up budget 22ms
+- If RO fails to provide at least 10ms separation between frames, faucet will go into a different frame format
 
 NOTE: 22 and C5 slots don not align - they are 6 and 5 slot cycles, so they are not in sync.
 

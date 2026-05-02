@@ -25,6 +25,19 @@ void WaterdropSerial::loop() {
   }
 }
 
+bool WaterdropSerial::is_tx_idle() const {
+#ifdef USE_ESP32
+  if (parent_ != nullptr) {
+    auto idf_uart = static_cast<uart::IDFUARTComponent *>(parent_);
+    auto uart_num = static_cast<uart_port_t>(idf_uart->get_hw_serial_number());
+    return uart_wait_tx_done(uart_num, 0) == ESP_OK;
+  }
+#else
+#  error "is_tx_idle not implemented for this platform"
+#endif
+  return true;
+}
+
 void WaterdropSerial::dump_base_config(const char *tag) const {
 #ifdef USE_ESP32
   if (parent_ != nullptr) {
