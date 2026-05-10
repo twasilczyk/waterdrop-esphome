@@ -56,7 +56,7 @@ void WaterdropSerialFaucet::send_c2_() {
 }
 
 void WaterdropSerialFaucet::send_c5_() {
-  send_frame(frame::Command::COMMAND_C5, cc5_data_.at(cc5_counter_++));
+  send_message(cc5_data_.at(cc5_counter_++));
   cc5_counter_ %= cc5_data_.size();
 }
 
@@ -76,28 +76,20 @@ void WaterdropSerialFaucet::handle_frame_(const frame::Frame &frame) {
     return;
   }
 
-  uint8_t page = frame.payload[0];
-  if (c22_data_.count(page) == 0) {
-    ESP_LOGW(TAG, "Unknown page requested: %02X", page);
+  // TODO: frame.as<Message22Request>(), asserting COMMAND_22.
+  auto slot = static_cast<message::Message22Slot>(frame.payload[0]);
+  auto response = c22_data_.find(slot);
+  if (response == c22_data_.end()) {
+    ESP_LOGW(TAG, "Unknown page requested: %02X", frame.payload[0]);
     return;
   }
-  send_frame(frame::Command::COMMAND_22, c22_data_.at(page));
+  send_message(response->second);
   ensure_frame_separation_();
-  if (page == 3) {
-    if (c22_data_[page][6] == 255) c22_data_[page][5]++;
-    c22_data_[page][6]++;
+  if (slot == message::Message22Slot::SLOT_03) {
+    auto &tds = response->second.get<message::Message22Slot03>();
+    if (tds.tds_low == 255) tds.tds_high++;
+    tds.tds_low++;
   }
-}
-
-void WaterdropSerialFaucet::send_frame(frame::Command command, const std::vector<uint8_t> &payload) {
-  frame::Frame frame;
-  assert(payload.size() <= frame.payload.size());
-  frame.source = frame::Source::RO;
-  frame.command = command;
-  frame.payload_length = static_cast<uint8_t>(payload.size());
-  std::copy(payload.begin(), payload.end(), frame.payload.begin());
-
-  frame.write(*this);
 }
 
 }  // namespace esphome::waterdrop_serial::faucet

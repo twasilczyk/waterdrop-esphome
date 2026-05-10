@@ -24,10 +24,11 @@ void WaterdropSerialRo::handle_frame_(const frame::Frame &frame) {
 }
 
 void WaterdropSerialRo::send_request_message_() {
-  static constexpr std::array<uint8_t, 6> request_slots{
-      0x0D, 0x01, 0x0E, 0x0F, 0x03, 0x02
+  static constexpr std::array<message::Message22Slot, 6> request_slots{
+      message::Message22Slot::SLOT_0D, message::Message22Slot::SLOT_01, message::Message22Slot::SLOT_0E,
+      message::Message22Slot::SLOT_0F, message::Message22Slot::SLOT_03, message::Message22Slot::SLOT_02
   };
-  uint8_t slot = request_slots[request_slot_++];
+  auto slot = request_slots[request_slot_++];
   request_slot_ %= request_slots.size();
 
   send_message(message::Message22Request{
