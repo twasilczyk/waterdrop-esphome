@@ -34,19 +34,35 @@ enum class PayloadChecksum : uint8_t {
   LONG,
 };
 
-static bool is_valid(Source source, Command command) {
+Source opposite(Source source) {
+  switch (source) {
+    case Source::RO:
+      return Source::FAUCET;
+    case Source::FAUCET:
+      return Source::RO;
+  }
+  assert(false);
+}
+
+static bool is_valid(Source source, Command command, size_t &expected_payload_length) {
   switch (source) {
     case Source::RO:
       switch (command) {
         case Command::COMMAND_C2:
+          expected_payload_length = 3;
+          return true;
         case Command::COMMAND_C5:
+          expected_payload_length = 8;
+          return true;
         case Command::COMMAND_22:
+          expected_payload_length = 9;
           return true;
       }
       return false;
     case Source::FAUCET:
       switch (command) {
         case Command::COMMAND_22:
+          expected_payload_length = 8;
           return true;
         case Command::COMMAND_C2:
         case Command::COMMAND_C5:
@@ -111,8 +127,10 @@ uint8_t Frame::get_frame_checksum(uint8_t checksum_base) const {
 }
 
 void Frame::write(uart::UARTDevice &uart) const {
-  assert(is_valid(source, command));
-  assert(payload_length <= payload.size());
+  size_t expected_payload_length;
+  assert(is_valid(source, command, expected_payload_length));
+  assert(payload_length == expected_payload_length);
+  assert(expected_payload_length <= payload.size());
 
   static Header header;
   header.s.length = payload_length + frame_overhead_for(source, command);
@@ -189,7 +207,8 @@ bool Parser::finish_(Frame &frame) {
   frame.source = source_;
   assert(length_current_ >= FRAME_OVERHEAD_A - FRAME_PREAMBLE_LENGTH);
   frame.command = static_cast<Command>(body_[0]);
-  if (!is_valid(source_, frame.command)) {
+  size_t expected_payload_length;
+  if (!is_valid(source_, frame.command, expected_payload_length)) {
     counters_.invalid_command++;
     counters_.last_invalid_command = static_cast<uint8_t>(frame.command);
     log_invalid_frame_("invalid command");
@@ -198,7 +217,8 @@ bool Parser::finish_(Frame &frame) {
 
   const uint8_t net_overhead = frame_overhead_for(source_, frame.command) - FRAME_PREAMBLE_LENGTH;
   frame.payload_length = length_current_ - net_overhead;
-  if (net_overhead > length_current_ || frame.payload_length > frame.payload.size()) {
+  if (net_overhead > length_current_ || frame.payload_length > frame.payload.size()
+      || frame.payload_length != expected_payload_length) {
     counters_.invalid_lengths++;
     log_invalid_frame_("invalid length");
     return false;

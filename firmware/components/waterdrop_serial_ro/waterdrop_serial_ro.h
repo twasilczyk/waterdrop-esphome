@@ -12,12 +12,9 @@ class WaterdropSerialRo : public WaterdropSerial {
 
  private:
   void handle_frame_(const frame::Frame &frame) override;
-  void send_request_frame_();
+  void send_request_message_();
 
   uint8_t request_slot_ = 0;
-
-  // TODO: remove
-  void send_frame(frame::Command command, const std::vector<uint8_t> &payload);
 };
 
 }  // namespace esphome::waterdrop_serial::ro

@@ -1,6 +1,7 @@
 #include <cxxflags.inc>
 #include "waterdrop_serial_faucet.h"
 
+#include "esphome/components/waterdrop_serial/message.h"
 #include "esphome/core/log.h"
 
 namespace esphome::waterdrop_serial::faucet {
@@ -49,25 +50,9 @@ void WaterdropSerialFaucet::ensure_frame_separation_() {
 }
 
 void WaterdropSerialFaucet::send_c2_() {
-  // STATE:
-  //  Boot: FF
-  //  Screen on: F1, F7
-  //  Flush: F3, F5, F6
-  //  Screen off: all others
-
-  // FLG2: no effect
-  //  0x03 - regular
-  //  0x01 - present during flush and boot
-
-  // ERR:
-  //  Display priority: E02 > E03 > E04 > E01
-  //  0b00000100: E02
-  //  0b00000001: E03
-  //  0b00000010: E04
-  //  0b10000000: E01
-
-  //                                                         STATE   FLG   ERR
-  send_frame(frame::Command::COMMAND_C2, std::vector<uint8_t>{0xF1, 0x03, 0x00});
+  send_message(message::MessageC2{
+    .state = 0xF1,
+  });
 }
 
 void WaterdropSerialFaucet::send_c5_() {
@@ -97,6 +82,7 @@ void WaterdropSerialFaucet::handle_frame_(const frame::Frame &frame) {
     return;
   }
   send_frame(frame::Command::COMMAND_22, c22_data_.at(page));
+  ensure_frame_separation_();
   if (page == 3) {
     if (c22_data_[page][6] == 255) c22_data_[page][5]++;
     c22_data_[page][6]++;
@@ -112,7 +98,6 @@ void WaterdropSerialFaucet::send_frame(frame::Command command, const std::vector
   std::copy(payload.begin(), payload.end(), frame.payload.begin());
 
   frame.write(*this);
-  ensure_frame_separation_();
 }
 
 }  // namespace esphome::waterdrop_serial::faucet

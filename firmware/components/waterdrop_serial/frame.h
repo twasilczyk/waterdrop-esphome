@@ -83,4 +83,6 @@ class Parser {
   std::array<uint8_t, _details::FRAME_MAX_LENGTH - _details::FRAME_PREAMBLE_LENGTH> body_;
 };
 
+Source opposite(Source source);
+
 }  // namespace esphome::waterdrop_serial::frame

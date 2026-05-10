@@ -8,7 +8,8 @@
 
 namespace esphome::waterdrop_serial {
 
-WaterdropSerial::WaterdropSerial(frame::Source source) : parser_(source) {}
+WaterdropSerial::WaterdropSerial(frame::Source source) : parser_(source),
+    outgoing_source_(frame::opposite(source)) {}
 
 void WaterdropSerial::loop() {
   int budget = 2 * frame::_details::FRAME_MAX_LENGTH;
@@ -56,6 +57,17 @@ void WaterdropSerial::dump_base_config(const char *tag) const {
   ESP_LOGCONFIG(tag, "    Invalid frame checksums: %zu", counters.invalid_checksum_frame);
   ESP_LOGCONFIG(tag, "    Invalid commands: %zu (last: 0x%02X)", counters.invalid_command,
       counters.last_invalid_command);
+}
+
+void WaterdropSerial::send_message(frame::Command command, const void *payload, size_t payload_length) {
+  frame::Frame frame;
+  assert(payload_length <= frame.payload.size());
+  frame.source = outgoing_source_;
+  frame.command = command;
+  frame.payload_length = static_cast<uint8_t>(payload_length);
+  std::copy(static_cast<const uint8_t *>(payload), static_cast<const uint8_t *>(payload) + payload_length, frame.payload.begin());
+
+  frame.write(*this);
 }
 
 }  // namespace esphome::waterdrop_serial

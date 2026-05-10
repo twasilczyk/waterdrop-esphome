@@ -17,8 +17,16 @@ class WaterdropSerial : public Component, protected uart::UARTDevice {
   void dump_base_config(const char *tag) const;
   bool is_tx_idle() const;
 
+  template <typename T>
+  void send_message(const T &message) {
+    send_message(message.COMMAND, &message, sizeof(message));
+  }
+
  private:
   frame::Parser parser_;
+  frame::Source outgoing_source_;
+
+  void send_message(frame::Command command, const void *payload, size_t payload_length);
 };
 
 }  // namespace esphome::waterdrop_serial
