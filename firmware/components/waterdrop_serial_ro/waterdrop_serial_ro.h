@@ -10,8 +10,10 @@ class WaterdropSerialRo : public WaterdropSerial {
   WaterdropSerialRo();
   void dump_config() override;
 
+ protected:
+  void handle_frame(const frame::Frame &frame) override;
+
  private:
-  void handle_frame_(const frame::Frame &frame) override;
   void send_request_message_();
 
   uint8_t request_slot_ = 0;

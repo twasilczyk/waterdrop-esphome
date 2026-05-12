@@ -11,7 +11,7 @@ using namespace std::chrono_literals;
 static const char *const TAG = "waterdrop_serial_faucet";
 static constexpr std::chrono::milliseconds MIN_FRAME_SEPARATION = 11ms;
 
-WaterdropSerialFaucet::WaterdropSerialFaucet() : WaterdropSerial(frame::Source::FAUCET) {}
+WaterdropSerialFaucet::WaterdropSerialFaucet() : WaterdropSerial(TAG, frame::Source::FAUCET) {}
 
 void WaterdropSerialFaucet::loop() {
   WaterdropSerial::loop();
@@ -62,10 +62,10 @@ void WaterdropSerialFaucet::send_c5_() {
 
 void WaterdropSerialFaucet::dump_config() {
   ESP_LOGCONFIG(TAG, "Waterdrop Serial Faucet:");
-  WaterdropSerial::dump_base_config(TAG);
+  WaterdropSerial::dump_config();
 }
 
-void WaterdropSerialFaucet::handle_frame_(const frame::Frame &frame) {
+void WaterdropSerialFaucet::handle_frame(const frame::Frame &frame) {
   ESP_LOGD(TAG, "RX %s", frame.to_string().c_str());
   if (frame.command != frame::Command::COMMAND_22) {
     ESP_LOGW(TAG, "Unexpected request: %02X", static_cast<uint8_t>(frame.command));

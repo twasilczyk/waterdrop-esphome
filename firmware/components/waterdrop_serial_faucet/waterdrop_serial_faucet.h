@@ -17,8 +17,10 @@ class WaterdropSerialFaucet : public WaterdropSerial {
   void dump_config() override;
   void loop() override;
 
+ protected:
+  void handle_frame(const frame::Frame &frame) override;
+
  private:
-  void handle_frame_(const frame::Frame &frame) override;
   void ensure_frame_separation_();
 
   void send_c2_();

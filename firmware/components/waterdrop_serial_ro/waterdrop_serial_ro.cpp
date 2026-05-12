@@ -8,14 +8,14 @@ namespace esphome::waterdrop_serial::ro {
 
 static const char *const TAG = "waterdrop_serial_ro";
 
-WaterdropSerialRo::WaterdropSerialRo() : WaterdropSerial(frame::Source::RO) {}
+WaterdropSerialRo::WaterdropSerialRo() : WaterdropSerial(TAG, frame::Source::RO) {}
 
 void WaterdropSerialRo::dump_config() {
   ESP_LOGCONFIG(TAG, "Waterdrop Serial RO:");
-  WaterdropSerial::dump_base_config(TAG);
+  WaterdropSerial::dump_config();
 }
 
-void WaterdropSerialRo::handle_frame_(const frame::Frame &frame) {
+void WaterdropSerialRo::handle_frame(const frame::Frame &frame) {
   ESP_LOGD(TAG, "RX %s", frame.to_string().c_str());
 
   if (frame.command == frame::Command::COMMAND_C2) {

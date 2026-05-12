@@ -8,13 +8,13 @@ namespace esphome::waterdrop_serial {
 
 class WaterdropSerial : public Component, protected uart::UARTDevice {
  public:
-  WaterdropSerial(frame::Source source);
+  WaterdropSerial(const char *tag, frame::Source source);
   using uart::UARTDevice::set_uart_parent;
   void loop() override;
 
  protected:
-  virtual void handle_frame_(const frame::Frame &frame) = 0;
-  void dump_base_config(const char *tag) const;
+  virtual void handle_frame(const frame::Frame &frame) = 0;
+  void dump_config() override;
   bool is_tx_idle() const;
 
   template <typename T>
@@ -23,6 +23,7 @@ class WaterdropSerial : public Component, protected uart::UARTDevice {
   }
 
  private:
+  const char *tag_;
   frame::Parser parser_;
   frame::Source outgoing_source_;
 
