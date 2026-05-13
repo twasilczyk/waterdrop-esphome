@@ -1,5 +1,6 @@
 #pragma once
 
+#include "endian.h"
 #include "frame.h"
 #include "packed_variant.h"
 
@@ -178,12 +179,9 @@ struct Message22Slot0E {
 struct Message22Slot0F {
   static constexpr Message22Slot TAG = Message22Slot::SLOT_0F;
 
-  uint8_t filter_total_life_cf_high = 0xFF;
-  uint8_t filter_total_life_cf_low = 0xFF;
-  uint8_t filter_total_life_ro_high = 0xFF;
-  uint8_t filter_total_life_ro_low = 0xFF;
-  uint8_t filter_total_life_cb_high = 0xFE;
-  uint8_t filter_total_life_cb_low = 0x99;
+  endian::big_uint16_t filter_total_life_cf = 0xFFFF;
+  endian::big_uint16_t filter_total_life_ro = 0xFFFF;
+  endian::big_uint16_t filter_total_life_cb = 0xFFFF;
   uint8_t unknown1 = 0xFF;
   uint8_t unknown2 = 0x33;
 };
@@ -195,8 +193,7 @@ struct Message22Slot03 {
   uint8_t unknown2 = 0x00;
   uint8_t unknown3 = 0x00;
   uint8_t unknown4 = 0x00;
-  uint8_t tds_high = 0x00;
-  uint8_t tds_low = 0x01;
+  endian::big_uint16_t tds = 0;
   uint8_t unknown5 = 0x00;
   uint8_t unknown6 = 0x0C;  // 0C or 0E
 };
@@ -205,12 +202,9 @@ struct Message22Slot03 {
 struct Message22Slot02 {
   static constexpr Message22Slot TAG = Message22Slot::SLOT_02;
 
-  uint8_t filter_used_life_cf_high = 0xFE;
-  uint8_t filter_used_life_cf_low = 0x96;
-  uint8_t filter_used_life_ro_high = 0xFE;
-  uint8_t filter_used_life_ro_low = 0x97;
-  uint8_t filter_used_life_cb_high = 0xFE;
-  uint8_t filter_used_life_cb_low = 0x98;
+  endian::big_uint16_t filter_used_life_cf = 0xFE96;
+  endian::big_uint16_t filter_used_life_ro = 0xFE97;
+  endian::big_uint16_t filter_used_life_cb = 0xFFFF;
   uint8_t unknown1 = 0x00;
   uint8_t unknown2 = 0x00;
 };

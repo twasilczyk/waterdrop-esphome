@@ -76,19 +76,18 @@ void WaterdropSerialFaucet::handle_frame(const frame::Frame &frame) {
     return;
   }
 
-  // TODO: frame.as<Message22Request>(), asserting COMMAND_22.
-  auto slot = static_cast<message::Message22Slot>(frame.payload[0]);
+  const auto& request = frame.as<message::Message22Request>();
+  auto slot = request.slot;
   auto response = c22_data_.find(slot);
   if (response == c22_data_.end()) {
-    ESP_LOGW(TAG, "Unknown page requested: %02X", frame.payload[0]);
+    ESP_LOGW(TAG, "Unknown page requested: %02X", static_cast<uint8_t>(slot));
     return;
   }
   send_message(response->second);
   ensure_frame_separation_();
   if (slot == message::Message22Slot::SLOT_03) {
-    auto &tds = response->second.get<message::Message22Slot03>();
-    if (tds.tds_low == 255) tds.tds_high++;
-    tds.tds_low++;
+    auto &slot03 = response->second.get<message::Message22Slot03>();
+    slot03.tds++;
   }
 }
 

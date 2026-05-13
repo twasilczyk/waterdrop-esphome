@@ -1,10 +1,13 @@
 #pragma once
 
 #include <array>
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <optional>
 #include <string>
+#include <type_traits>
 
 namespace esphome::uart {
 class UARTDevice;
@@ -44,6 +47,17 @@ struct Frame {
   uint8_t get_checksum_base() const;
   std::optional<uint8_t> get_payload_checksum(uint8_t checksum_base) const;
   uint8_t get_frame_checksum(uint8_t checksum_base) const;
+
+  template<typename T>
+  const T& as() const {
+    static_assert(alignof(T) == 1);
+    static_assert(sizeof(T) <= _details::PAYLOAD_MAX_LENGTH);
+
+    assert(command == T::COMMAND);
+    assert(payload_length == sizeof(T));
+
+    return reinterpret_cast<const T&>(payload);
+  }
 };
 
 struct Counters {
