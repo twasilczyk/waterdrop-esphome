@@ -204,7 +204,7 @@ struct Message22Slot02 {
 
   endian::big_uint16_t filter_used_life_cf = 0xFE96;
   endian::big_uint16_t filter_used_life_ro = 0xFE97;
-  endian::big_uint16_t filter_used_life_cb = 0xFFFF;
+  endian::big_uint16_t filter_used_life_cb = 0xFFCC;
   uint8_t unknown1 = 0x00;
   uint8_t unknown2 = 0x00;
 };
