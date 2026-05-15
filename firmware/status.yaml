@@ -6,6 +6,7 @@ light:
   - platform: esp32_rmt_led_strip
     id: status_led
     name: "Status LED"
+    disabled_by_default: true
     pin: GPIO38
     num_leds: 1
     chipset: ws2812
