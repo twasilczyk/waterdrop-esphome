@@ -18,6 +18,9 @@ static constexpr std::array<uint8_t, WaterdropSerialRo::ERROR_TYPES_COUNT> ERROR
     0x01,  // E03
     0x02,  // E04
 };
+static constexpr uint8_t KNOWN_ERROR_MASK = static_cast<uint8_t>(
+    ERROR_MASKS[0] | ERROR_MASKS[1] | ERROR_MASKS[2] | ERROR_MASKS[3]);
+static constexpr uint8_t UNKNOWN_ERROR_MASK = static_cast<uint8_t>(~KNOWN_ERROR_MASK);
 
 void DiagnosticSwitch::write_state(bool new_state) {
   publish_state(new_state);
@@ -55,6 +58,14 @@ void WaterdropSerialRo::set_error_sensors(
   error_sensors_ = sensors;
 }
 
+void WaterdropSerialRo::set_raw_byte_sensors(
+    std::array<sensor::Sensor *, RAW_BYTE_SENSOR_TYPES_COUNT> sensors) {
+  assert(std::all_of(sensors.begin(), sensors.end(), [](auto *sensor) {
+    return sensor != nullptr;
+  }));
+  raw_byte_sensors_ = sensors;
+}
+
 void WaterdropSerialRo::set_faucet_state_switch(DiagnosticSwitch *faucet_state_switch) {
   assert(faucet_state_switch != nullptr);
   faucet_state_switch_ = faucet_state_switch;
@@ -69,7 +80,7 @@ void WaterdropSerialRo::handle_frame(const frame::Frame &frame) {
   } else if (frame.command == frame::Command::COMMAND_22) {
     handle_response_message_(frame);
   } else if (frame.command == frame::Command::COMMAND_C5) {
-    // None of C5 slots are figured out yet.
+    handle_c5_message_(frame);
   } else {
     ESP_LOGW(TAG, "Unhandled command 0x%02X", static_cast<uint8_t>(frame.command));
   }
@@ -77,6 +88,12 @@ void WaterdropSerialRo::handle_frame(const frame::Frame &frame) {
 
 void WaterdropSerialRo::handle_state_message_(const frame::Frame &frame) {
   const auto &message = frame.as<message::MessageC2>();
+  publish_raw_byte_(RawByteSensor::C2_STATE, message.state);
+  publish_raw_byte_(RawByteSensor::C2_UNKNOWN, message.unknown);
+  publish_raw_byte_(
+      RawByteSensor::C2_UNKNOWN_ERROR,
+      static_cast<uint8_t>(message.error & UNKNOWN_ERROR_MASK));
+
   if (booting_sensor_ != nullptr) {
     booting_sensor_->publish_state(message.state == 0xFF);
   }
@@ -91,6 +108,37 @@ void WaterdropSerialRo::handle_state_message_(const frame::Frame &frame) {
     if (error_sensors_[i] != nullptr) {
       error_sensors_[i]->publish_state((message.error & ERROR_MASKS[i]) != 0);
     }
+  }
+}
+
+void WaterdropSerialRo::handle_c5_message_(const frame::Frame &frame) {
+  const auto &response = frame.as<message::MessageC5>();
+  switch (response.tag()) {
+    case message::MessageC5Slot::SLOT_01: {
+      const auto &slot = response.get<message::MessageC5Slot01>();
+      publish_raw_byte_(RawByteSensor::C5_SLOT_01_UNKNOWN7, slot.unknown7);
+      break;
+    }
+    case message::MessageC5Slot::SLOT_02: {
+      const auto &slot = response.get<message::MessageC5Slot02>();
+      publish_raw_byte_(RawByteSensor::C5_SLOT_02_UNKNOWN4, slot.unknown4);
+      break;
+    }
+    case message::MessageC5Slot::SLOT_03: {
+      const auto &slot = response.get<message::MessageC5Slot03>();
+      publish_raw_byte_(RawByteSensor::C5_SLOT_03_UNKNOWN2, slot.unknown2);
+      publish_raw_byte_(RawByteSensor::C5_SLOT_03_UNKNOWN3, slot.unknown3);
+      publish_raw_byte_(RawByteSensor::C5_SLOT_03_UNKNOWN4, slot.unknown4);
+      break;
+    }
+    case message::MessageC5Slot::SLOT_04: {
+      const auto &slot = response.get<message::MessageC5Slot04>();
+      publish_raw_byte_(RawByteSensor::C5_SLOT_04_UNKNOWN1, slot.unknown1);
+      publish_raw_byte_(RawByteSensor::C5_SLOT_04_UNKNOWN2, slot.unknown2);
+      break;
+    }
+    default:
+      break;
   }
 }
 
@@ -116,10 +164,19 @@ void WaterdropSerialRo::handle_response_message_(const frame::Frame &frame) {
       if (tds_sensor_ != nullptr) {
         tds_sensor_->publish_state(slot.tds);
       }
+      publish_raw_byte_(RawByteSensor::SLOT_22_03_UNKNOWN6, slot.unknown6);
       break;
     }
     default:
       break;
+  }
+}
+
+void WaterdropSerialRo::publish_raw_byte_(RawByteSensor sensor, uint8_t value) {
+  const auto index = static_cast<size_t>(sensor);
+  assert(index < raw_byte_sensors_.size());
+  if (raw_byte_sensors_[index] != nullptr) {
+    raw_byte_sensors_[index]->publish_state(value);
   }
 }
 

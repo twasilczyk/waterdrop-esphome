@@ -37,6 +37,7 @@ CONF_TDS = "tds"
 CONF_TOTAL_LIFE = "total_life"
 
 ICON_FAUCET = "mdi:faucet"
+ICON_RAW_BYTE = "mdi:hexadecimal"
 ICON_WATER_QUALITY = "mdi:water-opacity"
 ICON_WATER_OK = "mdi:water-check"
 ICON_WATER_FILTER = "mdi:air-filter"
@@ -56,6 +57,12 @@ class ErrorType:
     name: str
 
 
+@dataclass(frozen=True)
+class RawByteSensor:
+    key: str
+    name: str
+
+
 FILTERS = (
     Filter("cf", "CF filter", FilterType.CF),
     Filter("ro", "RO filter", FilterType.RO),
@@ -67,6 +74,20 @@ ERROR_SENSORS = (
     ErrorType("e02", "E02 error"),
     ErrorType("e03", "E03 error"),
     ErrorType("e04", "E04 error"),
+)
+
+RAW_BYTE_SENSORS = (
+    RawByteSensor("c2_state", "C2 raw state"),
+    RawByteSensor("c2_unknown", "C2 unknown"),
+    RawByteSensor("c2_error", "C2 unknown error"),
+    RawByteSensor("c5_01_unknown7", "C5 01 unknown 7"),
+    RawByteSensor("c5_02_unknown4", "C5 02 unknown 4"),
+    RawByteSensor("c5_03_unknown2", "C5 03 unknown 2"),
+    RawByteSensor("c5_03_unknown3", "C5 03 unknown 3"),
+    RawByteSensor("c5_03_unknown4", "C5 03 unknown 4"),
+    RawByteSensor("c5_04_unknown1", "C5 04 unknown 1"),
+    RawByteSensor("c5_04_unknown2", "C5 04 unknown 2"),
+    RawByteSensor("22_03_unknown6", "22 03 unknown 6"),
 )
 
 
@@ -126,6 +147,19 @@ ERROR_CONFIG_SCHEMA = {
     for error in ERROR_SENSORS
 }
 
+RAW_BYTE_CONFIG_SCHEMA = {
+    cv.Optional(
+        raw_byte.key, default={CONF_NAME: raw_byte.name}
+    ): sensor.sensor_schema(
+        icon=ICON_RAW_BYTE,
+        accuracy_decimals=0,
+        filters=[{"delta": 0}],
+        state_class=STATE_CLASS_MEASUREMENT,
+        entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+    )
+    for raw_byte in RAW_BYTE_SENSORS
+}
+
 ENTITIES_SCHEMA = cv.Schema(
     {
         cv.Optional(CONF_TDS, default={CONF_NAME: "TDS"}): sensor.sensor_schema(
@@ -147,6 +181,7 @@ ENTITIES_SCHEMA = cv.Schema(
             icon=ICON_WATER_PUMP,
             device_class=DEVICE_CLASS_RUNNING,
         ),
+        **RAW_BYTE_CONFIG_SCHEMA,
         **ERROR_CONFIG_SCHEMA,
         **FILTER_CONFIG_SCHEMA,
         cv.Optional(
@@ -199,6 +234,12 @@ async def to_code(config):
         for error in ERROR_SENSORS
     ]
     cg.add(var.set_error_sensors(cg.ArrayInitializer(*error_sensors)))
+
+    raw_byte_sensors = [
+        await sensor.new_sensor(entities_config[raw_byte.key])
+        for raw_byte in RAW_BYTE_SENSORS
+    ]
+    cg.add(var.set_raw_byte_sensors(cg.ArrayInitializer(*raw_byte_sensors)))
 
     faucet_state_switch = await switch.new_switch(entities_config[CONF_FAUCET_OPEN])
     cg.add(var.set_faucet_state_switch(faucet_state_switch))
