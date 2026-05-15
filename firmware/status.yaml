@@ -13,6 +13,7 @@ light:
     rgb_order: RGB
     default_transition_length: 0s
     restore_mode: ALWAYS_OFF
+    icon: "mdi:led-variant-on"
 
 esphome:
   on_boot:
