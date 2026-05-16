@@ -20,6 +20,10 @@ namespace esphome::sensor {
 class Sensor;
 }
 
+namespace esphome::text_sensor {
+class TextSensor;
+}
+
 namespace esphome::waterdrop_serial::ro {
 
 class DiagnosticSwitch : public switch_::Switch {
@@ -58,6 +62,7 @@ class WaterdropSerialRo : public WaterdropSerial {
       std::array<binary_sensor::BinarySensor *, ERROR_TYPES_COUNT> sensors);
   void set_raw_byte_sensors(
       std::array<sensor::Sensor *, RAW_BYTE_SENSOR_TYPES_COUNT> sensors);
+  void set_unexpected_frame_sensor(text_sensor::TextSensor *sensor);
   void set_faucet_state_switch(DiagnosticSwitch *faucet_state_switch);
 
  protected:
@@ -69,6 +74,7 @@ class WaterdropSerialRo : public WaterdropSerial {
   void handle_c5_message_(const frame::Frame &frame);
   void handle_response_message_(const frame::Frame &frame);
   void publish_raw_byte_(RawByteSensor sensor, uint8_t value);
+  void publish_unexpected_frame_(const frame::Frame &frame, const char *reason);
   filter::Filter &filter_(filter::Type filter);
 
   uint8_t request_slot_ = 0;
@@ -78,6 +84,7 @@ class WaterdropSerialRo : public WaterdropSerial {
   binary_sensor::BinarySensor *flushing_sensor_ = nullptr;
   std::array<binary_sensor::BinarySensor *, ERROR_TYPES_COUNT> error_sensors_{};
   std::array<sensor::Sensor *, RAW_BYTE_SENSOR_TYPES_COUNT> raw_byte_sensors_{};
+  text_sensor::TextSensor *unexpected_frame_sensor_ = nullptr;
   DiagnosticSwitch *faucet_state_switch_ = nullptr;
 };
 

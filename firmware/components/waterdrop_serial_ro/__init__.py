@@ -1,7 +1,13 @@
 from dataclasses import dataclass
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.components import binary_sensor, sensor, switch, waterdrop_serial
+from esphome.components import (
+    binary_sensor,
+    sensor,
+    switch,
+    text_sensor,
+    waterdrop_serial,
+)
 from esphome.const import (
     CONF_NAME,
     DEVICE_CLASS_PROBLEM,
@@ -13,7 +19,14 @@ from esphome.const import (
     UNIT_PERCENT,
 )
 
-AUTO_LOAD = ["binary_sensor", "cxxflags", "sensor", "switch", "waterdrop_serial"]
+AUTO_LOAD = [
+    "binary_sensor",
+    "cxxflags",
+    "sensor",
+    "switch",
+    "text_sensor",
+    "waterdrop_serial",
+]
 CODEOWNERS = ["@twasilczyk"]
 DEPENDENCIES = waterdrop_serial.DEPENDENCIES
 
@@ -35,6 +48,7 @@ CONF_REMAINING_LIFE = "remaining_life"
 CONF_REMAINING_PERCENT = "remaining_percent"
 CONF_TDS = "tds"
 CONF_TOTAL_LIFE = "total_life"
+CONF_UNEXPECTED_FRAME = "unexpected_frame"
 
 ICON_FAUCET = "mdi:faucet"
 ICON_RAW_BYTE = "mdi:hexadecimal"
@@ -185,6 +199,12 @@ ENTITIES_SCHEMA = cv.Schema(
         **ERROR_CONFIG_SCHEMA,
         **FILTER_CONFIG_SCHEMA,
         cv.Optional(
+            CONF_UNEXPECTED_FRAME, default={CONF_NAME: "Unexpected frame"}
+        ): text_sensor.text_sensor_schema(
+            icon=ICON_RAW_BYTE,
+            entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+        ),
+        cv.Optional(
             CONF_FAUCET_OPEN, default={CONF_NAME: "Faucet open"}
         ): switch.switch_schema(
             DiagnosticSwitch,
@@ -240,6 +260,11 @@ async def to_code(config):
         for raw_byte in RAW_BYTE_SENSORS
     ]
     cg.add(var.set_raw_byte_sensors(cg.ArrayInitializer(*raw_byte_sensors)))
+
+    unexpected_frame = await text_sensor.new_text_sensor(
+        entities_config[CONF_UNEXPECTED_FRAME]
+    )
+    cg.add(var.set_unexpected_frame_sensor(unexpected_frame))
 
     faucet_state_switch = await switch.new_switch(entities_config[CONF_FAUCET_OPEN])
     cg.add(var.set_faucet_state_switch(faucet_state_switch))

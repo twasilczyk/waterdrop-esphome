@@ -3,11 +3,13 @@
 
 #include "esphome/components/binary_sensor/binary_sensor.h"
 #include "esphome/components/sensor/sensor.h"
+#include "esphome/components/text_sensor/text_sensor.h"
 #include "esphome/components/waterdrop_serial/message.h"
 #include "esphome/core/log.h"
 
 #include <algorithm>
 #include <cassert>
+#include <string>
 
 namespace esphome::waterdrop_serial::ro {
 
@@ -31,6 +33,7 @@ WaterdropSerialRo::WaterdropSerialRo() : WaterdropSerial(TAG, frame::Source::RO)
 void WaterdropSerialRo::dump_config() {
   ESP_LOGCONFIG(TAG, "Waterdrop Serial RO:");
   WaterdropSerial::dump_config();
+  LOG_TEXT_SENSOR("  ", "Unexpected Frame", unexpected_frame_sensor_);
   LOG_SWITCH("  ", "Faucet State", faucet_state_switch_);
 }
 
@@ -64,6 +67,11 @@ void WaterdropSerialRo::set_raw_byte_sensors(
     return sensor != nullptr;
   }));
   raw_byte_sensors_ = sensors;
+}
+
+void WaterdropSerialRo::set_unexpected_frame_sensor(text_sensor::TextSensor *sensor) {
+  assert(sensor != nullptr);
+  unexpected_frame_sensor_ = sensor;
 }
 
 void WaterdropSerialRo::set_faucet_state_switch(DiagnosticSwitch *faucet_state_switch) {
@@ -116,16 +124,33 @@ void WaterdropSerialRo::handle_c5_message_(const frame::Frame &frame) {
   switch (response.tag()) {
     case message::MessageC5Slot::SLOT_01: {
       const auto &slot = response.get<message::MessageC5Slot01>();
+      const auto expected = message::MessageC5Slot01{};
+      if (slot.unknown1 != expected.unknown1 || slot.unknown2 != expected.unknown2 ||
+          slot.unknown3 != expected.unknown3 || slot.unknown4 != expected.unknown4 ||
+          slot.unknown5 != expected.unknown5 || slot.unknown6 != expected.unknown6) {
+        publish_unexpected_frame_(frame, "Unexpected C5 slot 01");
+      }
       publish_raw_byte_(RawByteSensor::C5_SLOT_01_UNKNOWN7, slot.unknown7);
       break;
     }
     case message::MessageC5Slot::SLOT_02: {
       const auto &slot = response.get<message::MessageC5Slot02>();
+      const auto expected = message::MessageC5Slot02{};
+      if (slot.unknown1 != expected.unknown1 || slot.unknown2 != expected.unknown2 ||
+          slot.unknown3 != expected.unknown3 || slot.unknown5 != expected.unknown5 ||
+          slot.unknown6 != expected.unknown6 || slot.unknown7 != expected.unknown7) {
+        publish_unexpected_frame_(frame, "Unexpected C5 slot 02");
+      }
       publish_raw_byte_(RawByteSensor::C5_SLOT_02_UNKNOWN4, slot.unknown4);
       break;
     }
     case message::MessageC5Slot::SLOT_03: {
       const auto &slot = response.get<message::MessageC5Slot03>();
+      const auto expected = message::MessageC5Slot03{};
+      if (slot.unknown1 != expected.unknown1 || slot.unknown5 != expected.unknown5 ||
+          slot.unknown6 != expected.unknown6 || slot.unknown7 != expected.unknown7) {
+        publish_unexpected_frame_(frame, "Unexpected C5 slot 03");
+      }
       publish_raw_byte_(RawByteSensor::C5_SLOT_03_UNKNOWN2, slot.unknown2);
       publish_raw_byte_(RawByteSensor::C5_SLOT_03_UNKNOWN3, slot.unknown3);
       publish_raw_byte_(RawByteSensor::C5_SLOT_03_UNKNOWN4, slot.unknown4);
@@ -133,11 +158,29 @@ void WaterdropSerialRo::handle_c5_message_(const frame::Frame &frame) {
     }
     case message::MessageC5Slot::SLOT_04: {
       const auto &slot = response.get<message::MessageC5Slot04>();
+      const auto expected = message::MessageC5Slot04{};
+      if (slot.unknown3 != expected.unknown3 || slot.unknown4 != expected.unknown4 ||
+          slot.unknown5 != expected.unknown5 || slot.unknown6 != expected.unknown6 ||
+          slot.unknown7 != expected.unknown7) {
+        publish_unexpected_frame_(frame, "Unexpected C5 slot 04");
+      }
       publish_raw_byte_(RawByteSensor::C5_SLOT_04_UNKNOWN1, slot.unknown1);
       publish_raw_byte_(RawByteSensor::C5_SLOT_04_UNKNOWN2, slot.unknown2);
       break;
     }
+    case message::MessageC5Slot::SLOT_05: {
+      const auto &slot = response.get<message::MessageC5Slot05>();
+      const auto expected = message::MessageC5Slot05{};
+      if (slot.unknown1 != expected.unknown1 || slot.unknown2 != expected.unknown2 ||
+          slot.unknown3 != expected.unknown3 || slot.unknown4 != expected.unknown4 ||
+          slot.unknown5 != expected.unknown5 || slot.unknown6 != expected.unknown6 ||
+          slot.unknown7 != expected.unknown7) {
+        publish_unexpected_frame_(frame, "Unexpected C5 slot 05");
+      }
+      break;
+    }
     default:
+      publish_unexpected_frame_(frame, "Unexpected C5 slot");
       break;
   }
 }
@@ -145,8 +188,23 @@ void WaterdropSerialRo::handle_c5_message_(const frame::Frame &frame) {
 void WaterdropSerialRo::handle_response_message_(const frame::Frame &frame) {
   const auto &response = frame.as<message::Message22Response>();
   switch (response.tag()) {
+    case message::Message22Slot::SLOT_01: {
+      const auto &slot = response.get<message::Message22Slot01>();
+      const auto expected = message::Message22Slot01{};
+      if (slot.unknown1 != expected.unknown1 || slot.unknown2 != expected.unknown2 ||
+          slot.unknown3 != expected.unknown3 || slot.unknown4 != expected.unknown4 ||
+          slot.unknown5 != expected.unknown5 || slot.unknown6 != expected.unknown6 ||
+          slot.unknown7 != expected.unknown7 || slot.unknown8 != expected.unknown8) {
+        publish_unexpected_frame_(frame, "Unexpected 22 slot 01");
+      }
+      break;
+    }
     case message::Message22Slot::SLOT_0F: {
       const auto &slot = response.get<message::Message22Slot0F>();
+      const auto expected = message::Message22Slot0F{};
+      if (slot.unknown1 != expected.unknown1 || slot.unknown2 != expected.unknown2) {
+        publish_unexpected_frame_(frame, "Unexpected 22 slot 0F");
+      }
       filter_(filter::Type::CF).set_total_life(slot.filter_total_life_cf);
       filter_(filter::Type::RO).set_total_life(slot.filter_total_life_ro);
       filter_(filter::Type::CB).set_total_life(slot.filter_total_life_cb);
@@ -154,6 +212,10 @@ void WaterdropSerialRo::handle_response_message_(const frame::Frame &frame) {
     }
     case message::Message22Slot::SLOT_02: {
       const auto &slot = response.get<message::Message22Slot02>();
+      const auto expected = message::Message22Slot02{};
+      if (slot.unknown1 != expected.unknown1 || slot.unknown2 != expected.unknown2) {
+        publish_unexpected_frame_(frame, "Unexpected 22 slot 02");
+      }
       filter_(filter::Type::CF).set_used_life(slot.filter_used_life_cf);
       filter_(filter::Type::RO).set_used_life(slot.filter_used_life_ro);
       filter_(filter::Type::CB).set_used_life(slot.filter_used_life_cb);
@@ -161,13 +223,42 @@ void WaterdropSerialRo::handle_response_message_(const frame::Frame &frame) {
     }
     case message::Message22Slot::SLOT_03: {
       const auto &slot = response.get<message::Message22Slot03>();
+      const auto expected = message::Message22Slot03{};
+      if (slot.unknown1 != expected.unknown1 || slot.unknown2 != expected.unknown2 ||
+          slot.unknown3 != expected.unknown3 || slot.unknown4 != expected.unknown4 ||
+          slot.unknown5 != expected.unknown5) {
+        publish_unexpected_frame_(frame, "Unexpected 22 slot 03");
+      }
       if (tds_sensor_ != nullptr) {
         tds_sensor_->publish_state(slot.tds);
       }
       publish_raw_byte_(RawByteSensor::SLOT_22_03_UNKNOWN6, slot.unknown6);
       break;
     }
+    case message::Message22Slot::SLOT_0D: {
+      const auto &slot = response.get<message::Message22Slot0D>();
+      const auto expected = message::Message22Slot0D{};
+      if (slot.unknown1 != expected.unknown1 || slot.unknown2 != expected.unknown2 ||
+          slot.unknown3 != expected.unknown3 || slot.unknown4 != expected.unknown4 ||
+          slot.unknown5 != expected.unknown5 || slot.unknown6 != expected.unknown6 ||
+          slot.unknown7 != expected.unknown7 || slot.unknown8 != expected.unknown8) {
+        publish_unexpected_frame_(frame, "Unexpected 22 slot 0D");
+      }
+      break;
+    }
+    case message::Message22Slot::SLOT_0E: {
+      const auto &slot = response.get<message::Message22Slot0E>();
+      const auto expected = message::Message22Slot0E{};
+      if (slot.unknown1 != expected.unknown1 || slot.unknown2 != expected.unknown2 ||
+          slot.unknown3 != expected.unknown3 || slot.unknown4 != expected.unknown4 ||
+          slot.unknown5 != expected.unknown5 || slot.unknown6 != expected.unknown6 ||
+          slot.unknown7 != expected.unknown7 || slot.unknown8 != expected.unknown8) {
+        publish_unexpected_frame_(frame, "Unexpected 22 slot 0E");
+      }
+      break;
+    }
     default:
+      publish_unexpected_frame_(frame, "Unexpected 22 slot");
       break;
   }
 }
@@ -178,6 +269,20 @@ void WaterdropSerialRo::publish_raw_byte_(RawByteSensor sensor, uint8_t value) {
   if (raw_byte_sensors_[index] != nullptr) {
     raw_byte_sensors_[index]->publish_state(value);
   }
+}
+
+void WaterdropSerialRo::publish_unexpected_frame_(const frame::Frame &frame, const char *reason) {
+  const auto frame_text = frame.to_string();
+  ESP_LOGW(TAG, "%s: %s", reason, frame_text.c_str());
+
+  if (unexpected_frame_sensor_ == nullptr) {
+    return;
+  }
+
+  std::string state = reason;
+  state += ": ";
+  state += frame_text;
+  unexpected_frame_sensor_->publish_state(state);
 }
 
 filter::Filter &WaterdropSerialRo::filter_(filter::Type filter) {
