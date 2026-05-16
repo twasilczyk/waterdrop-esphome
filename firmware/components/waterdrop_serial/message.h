@@ -16,23 +16,60 @@ struct message_variant : packed_variant<Alternatives...> {
   using packed_variant<Alternatives...>::operator=;
 };
 
+/* Water events are spread between 3 fields:
+ *  - MessageC2::state
+ *  - MessageC5Slot04::unknown1
+ *  - MessageC5Slot04::unknown2
+ *
+ * Idle
+ *  - C2=FF, C5u1=FF, C5u2=F1
+ *
+ * Filling glass with water (without pressure tank):
+ *  - C5u2 doesn't change at all
+ *  - First 3 seconds: C2 oscillates between F1 and FF with 650ms period
+ *  - Then C5u2 joins, oscillating between F1 and FF with 2.5s period
+ *
+ * Filling pitcher or glass with water (with pressure tank):
+ *  - C5u2 doesn't change at all
+ *  - Both C2 and C5u1 oscillate together (at the same time) between F1 and FF with 8s cycle
+ *
+ * Activity every 5 minutes (with or without pressure tank):
+ *  - C2 goes FF -> F7 -> F1 -> FF very quickly (unmeasurable in HA)
+ *  - Variant A: C5u1/2 doesn't change
+ *  - Variant B: C5u1/2 change to F7 for 2x the time C2 was not in idle (starting together with C2)
+ *  - Variant C: C5u1 changes to F1 for 2x the time C2 was not in idle, C5u2 doesn't change
+ *  - Variants change periodically (cycle is 5 minutes):
+ *    - Variant A runs for 2 cycles after water use or 9 cycles (but sometimes 6, first time after
+ *      water use) after Variant C
+ *    - Variant B runs for 3 cycles after Variant A
+ *    - Variant C runs for 5 cycles after Variant B (but sometimes 8, first time after water use)
+ */
+
+/* A couple values are oscillating together 14 +/- 1:
+ * - Message22Slot03::unknown6
+ * - MessageC5Slot03::unknown2
+ * - MessageC5Slot05::unknown3
+ * - MessageC5Slot05::unknown4
+ */
+
 struct MessageC2 {
   static constexpr auto COMMAND = frame::Command::COMMAND_C2;
 
   /**
    * State of the RO unit, but also having effect on faucet screen state.
    *
-   * Boot: FF
-   * Screen on: F1, F7
-   * Flush: F3, F5, F6
-   * Screen off: all others
+   * 0xF1 - pump running (or no input water when trying to run, but before E03 is detected)
+   * 0xF7 - briefly before pump running for every-5-min-flush
+   * 0xFF - pump idle
+   * 0xF3, 0xF5, 0xF6 - flushing after boot?
+   * 0xF0 - E03?
    */
   uint8_t state;
 
-  /* No effect known.
+  /* No effect known. Pump state?
    *
-   * 0x03 - regular
-   * 0x01 - present during flush and boot
+   * 0x03 - pump running (or there's no input water)
+   * 0x01 - pump idle
    */
   uint8_t unknown = 0x03;
 
@@ -67,7 +104,7 @@ struct MessageC5Slot01 {
   uint8_t unknown4 = 0x00;
   uint8_t unknown5 = 0x00;
   uint8_t unknown6 = 0x00;
-  uint8_t unknown7 = 0x0A;  // 00 (rare) or 0A
+  uint8_t unknown7 = 0x0A;  // 00 (rare), 0A, 28
 };
 
 struct MessageC5Slot02 {
@@ -76,34 +113,53 @@ struct MessageC5Slot02 {
   uint8_t unknown1 = 0x00;
   uint8_t unknown2 = 0x00;
   uint8_t unknown3 = 0x00;
-  uint8_t unknown4 = 0x35;  // 00, 34, 35
+  uint8_t unknown4 = 0x35;  // 4-36 analog range, but also observed 53 in winter
   uint8_t unknown5 = 0x08;
   uint8_t unknown6 = 0x34;
-  uint8_t unknown7 = 0x00;
+  uint8_t unknown7 = 0x00;  // 00, 01
 };
 
 struct MessageC5Slot03 {
   static constexpr MessageC5Slot TAG = MessageC5Slot::SLOT_03;
 
   uint8_t unknown1 = 0x00;
-  uint8_t unknown2 = 0x0E;  // 0C, 0E, 0D (rare), 19 (rare)
-  uint8_t unknown3 = 0x01;  // 01, 03
-  uint8_t unknown4 = 0xB0;  // 90, B0
+
+  // 12-15 maybe analog value, but seen 25 once.
+  // Very stable, but heavily oscillating when between values.
+  uint8_t unknown2 = 0x0E;
+
+  // unknown3=H, unknown4=L. Total hours powered on.
+  // Will wrap around after 7.5 years, carries 0.3% error (counts a full day after 24:05 hours).
+  uint8_t unknown3 = 0x01;
+  uint8_t unknown4 = 0xB0;
+
   uint8_t unknown5 = 0x00;
+
+  // Started rising from 40 to 90 (by 10 every 6:21~6:23) after turning off input valve.
+  // Also seen 10 when new.
   uint8_t unknown6 = 0x0A;
+
   uint8_t unknown7 = 0x00;
 };
 
 struct MessageC5Slot04 {
   static constexpr MessageC5Slot TAG = MessageC5Slot::SLOT_04;
 
+  // Corelated with MessageC2::state
+  // - FF when idle
+  // - F0 when E03 (and F1 right before that)
   uint8_t unknown1 = 0xF1;  // F1, F3, FF
+
+  // Corelated with MessageC2::state
+  // - F1 when idle
+  // - Not reacting to E03
   uint8_t unknown2 = 0xF1;  // F1, F3
+
   uint8_t unknown3 = 0x00;
   uint8_t unknown4 = 0x00;
   uint8_t unknown5 = 0x00;
-  uint8_t unknown6 = 0x0E;
-  uint8_t unknown7 = 0xFF;
+  uint8_t unknown6 = 0x0E;  // 00, 0E
+  uint8_t unknown7 = 0xFF;  // 00, FF
 };
 
 struct MessageC5Slot05 {
@@ -111,8 +167,8 @@ struct MessageC5Slot05 {
 
   uint8_t unknown1 = 0x00;
   uint8_t unknown2 = 0x00;
-  uint8_t unknown3 = 0x0E;
-  uint8_t unknown4 = 0x0E;
+  uint8_t unknown3 = 0x0E;  // Correlated with MessageC5Slot03::unknown2
+  uint8_t unknown4 = 0x0E;  // Correlated with MessageC5Slot03::unknown2
   uint8_t unknown5 = 0x00;
   uint8_t unknown6 = 0x00;
   uint8_t unknown7 = 0x00;
@@ -153,7 +209,7 @@ struct Message22Request {
   uint8_t unknown1 = 0x00;
   uint8_t unknown2 = 0x09;
 
-  FaucetState faucetState;
+  FaucetState faucetState = FaucetState::CLOSED;
 
   uint8_t unknown3 = 0x00;
   uint8_t unknown4 = 0x00;
@@ -165,6 +221,7 @@ static_assert(sizeof(Message22Request) == 8);
 struct Message22Slot0E {
   static constexpr Message22Slot TAG = Message22Slot::SLOT_0E;
 
+  // Dynamic bytes observed while flushing.
   uint8_t unknown1 = 0xFF;
   uint8_t unknown2 = 0xFF;
   uint8_t unknown3 = 0xFF;
@@ -182,7 +239,7 @@ struct Message22Slot0F {
   endian::big_uint16_t filter_total_life_cf = 0xFFFF;
   endian::big_uint16_t filter_total_life_ro = 0xFFFF;
   endian::big_uint16_t filter_total_life_cb = 0xFFFF;
-  uint8_t unknown1 = 0xFF;
+  uint8_t unknown1 = 0xFF;  // 44, FF
   uint8_t unknown2 = 0x33;
 };
 
@@ -195,7 +252,7 @@ struct Message22Slot03 {
   uint8_t unknown4 = 0x00;
   endian::big_uint16_t tds = 0;
   uint8_t unknown5 = 0x00;
-  uint8_t unknown6 = 0x0C;  // 0C or 0E
+  uint8_t unknown6 = 0x0C;  // Same as MessageC5Slot03::unknown2
 };
 
 // CF, RO, CB (H, L): filter used life. Turns orange at 360 units before red
@@ -209,16 +266,16 @@ struct Message22Slot02 {
   uint8_t unknown2 = 0x00;
 };
 
-// unknown2/unknown4: 0A or 00 (rare) - always the same and same in 01 and 0D slots
+// unknown2/unknown4/unknown6: always the same and same in 01 and 0D slots.
 struct Message22Slot0D {
   static constexpr Message22Slot TAG = Message22Slot::SLOT_0D;
 
   uint8_t unknown1 = 0x00;
-  uint8_t unknown2 = 0x0A;
+  uint8_t unknown2 = 0x0A;  // 00 (rare), 0A, 28
   uint8_t unknown3 = 0x00;
-  uint8_t unknown4 = 0x0A;
+  uint8_t unknown4 = 0x0A;  // 00 (rare), 0A, 28
   uint8_t unknown5 = 0x00;
-  uint8_t unknown6 = 0x0A;
+  uint8_t unknown6 = 0x0A;  // 00 (rare), 0A, 28
   uint8_t unknown7 = 0x00;
   uint8_t unknown8 = 0x00;
 };
@@ -228,11 +285,11 @@ struct Message22Slot01 {
   static constexpr Message22Slot TAG = Message22Slot::SLOT_01;
 
   uint8_t unknown1 = 0x00;
-  uint8_t unknown2 = 0x0A;
+  uint8_t unknown2 = 0x0A;  // 00 (rare), 0A, 28
   uint8_t unknown3 = 0x00;
-  uint8_t unknown4 = 0x0A;
+  uint8_t unknown4 = 0x0A;  // 00 (rare), 0A, 28
   uint8_t unknown5 = 0x00;
-  uint8_t unknown6 = 0x0A;
+  uint8_t unknown6 = 0x0A;  // 00 (rare), 0A, 28
   uint8_t unknown7 = 0x00;
   uint8_t unknown8 = 0x00;
 };
