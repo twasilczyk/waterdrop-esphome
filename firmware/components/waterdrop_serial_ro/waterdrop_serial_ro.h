@@ -42,8 +42,6 @@ class WaterdropSerialRo : public WaterdropSerial {
     C5_SLOT_02_UNKNOWN4,
     C5_SLOT_02_UNKNOWN7,
     C5_SLOT_03_UNKNOWN2,
-    C5_SLOT_03_UNKNOWN3,
-    C5_SLOT_03_UNKNOWN4,
     C5_SLOT_03_UNKNOWN6,
     C5_SLOT_04_UNKNOWN1,
     C5_SLOT_04_UNKNOWN2,
@@ -76,6 +74,7 @@ class WaterdropSerialRo : public WaterdropSerial {
 
   void set_filter_sensors(filter::Type filter, filter::Sensors sensors);
   void set_tds_sensor(sensor::Sensor *sensor);
+  void set_operating_lifetime_sensor(sensor::Sensor *sensor);
   void set_booting_sensor(binary_sensor::BinarySensor *sensor);
   void set_flushing_sensor(binary_sensor::BinarySensor *sensor);
   void set_error_sensors(
@@ -100,6 +99,7 @@ class WaterdropSerialRo : public WaterdropSerial {
   uint8_t request_slot_ = 0;
   std::array<filter::Filter, static_cast<size_t>(filter::Type::COUNT_)> filters_{};
   sensor::Sensor *tds_sensor_ = nullptr;
+  sensor::Sensor *operating_lifetime_sensor_ = nullptr;
   binary_sensor::BinarySensor *booting_sensor_ = nullptr;
   binary_sensor::BinarySensor *flushing_sensor_ = nullptr;
   std::array<binary_sensor::BinarySensor *, ERROR_TYPES_COUNT> error_sensors_{};

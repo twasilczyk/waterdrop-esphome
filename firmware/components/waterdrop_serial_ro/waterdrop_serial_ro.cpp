@@ -24,6 +24,8 @@ static constexpr uint8_t KNOWN_ERROR_MASK = static_cast<uint8_t>(
     ERROR_MASKS[0] | ERROR_MASKS[1] | ERROR_MASKS[2] | ERROR_MASKS[3]);
 static constexpr uint8_t UNKNOWN_ERROR_MASK = static_cast<uint8_t>(~KNOWN_ERROR_MASK);
 
+static constexpr float HOURS_PER_DAY = 24.0f;
+
 void DiagnosticSwitch::write_state(bool new_state) {
   publish_state(new_state);
 }
@@ -43,6 +45,10 @@ void WaterdropSerialRo::set_filter_sensors(filter::Type filter, filter::Sensors 
 
 void WaterdropSerialRo::set_tds_sensor(sensor::Sensor *sensor) {
   tds_sensor_ = sensor;
+}
+
+void WaterdropSerialRo::set_operating_lifetime_sensor(sensor::Sensor *sensor) {
+  operating_lifetime_sensor_ = sensor;
 }
 
 void WaterdropSerialRo::set_booting_sensor(binary_sensor::BinarySensor *sensor) {
@@ -147,14 +153,18 @@ void WaterdropSerialRo::handle_c5_message_(const frame::Frame &frame) {
     }
     case message::MessageC5Slot::SLOT_03: {
       const auto &slot = response.get<message::MessageC5Slot03>();
+      if (operating_lifetime_sensor_ != nullptr) {
+        operating_lifetime_sensor_->publish_state(
+            static_cast<uint16_t>(slot.operating_lifetime_hours)
+            * slot.OPERATING_LIFETIME_ERROR / HOURS_PER_DAY);
+      }
+
       const auto expected = message::MessageC5Slot03{};
       if (slot.unknown1 != expected.unknown1 || slot.unknown5 != expected.unknown5 ||
           slot.unknown7 != expected.unknown7) {
         publish_unexpected_frame_(frame, "Unexpected C5 slot 03");
       }
       publish_raw_byte_(RawByteSensor::C5_SLOT_03_UNKNOWN2, slot.unknown2);
-      publish_raw_byte_(RawByteSensor::C5_SLOT_03_UNKNOWN3, slot.unknown3);
-      publish_raw_byte_(RawByteSensor::C5_SLOT_03_UNKNOWN4, slot.unknown4);
       publish_raw_byte_(RawByteSensor::C5_SLOT_03_UNKNOWN6, slot.unknown6);
       break;
     }

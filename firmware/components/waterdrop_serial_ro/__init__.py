@@ -10,11 +10,13 @@ from esphome.components import (
 )
 from esphome.const import (
     CONF_NAME,
+    DEVICE_CLASS_DURATION,
     DEVICE_CLASS_PROBLEM,
     DEVICE_CLASS_RUNNING,
     ENTITY_CATEGORY_DIAGNOSTIC,
     ICON_RESTART,
     STATE_CLASS_MEASUREMENT,
+    STATE_CLASS_TOTAL_INCREASING,
     UNIT_PARTS_PER_MILLION,
     UNIT_PERCENT,
 )
@@ -47,6 +49,7 @@ CONF_HEALTH = "health"
 CONF_REMAINING_LIFE = "remaining_life"
 CONF_REMAINING_PERCENT = "remaining_percent"
 CONF_TDS = "tds"
+CONF_OPERATING_LIFETIME = "operating_lifetime"
 CONF_TOTAL_LIFE = "total_life"
 CONF_UNEXPECTED_FRAME = "unexpected_frame"
 
@@ -56,6 +59,7 @@ ICON_WATER_QUALITY = "mdi:water-opacity"
 ICON_WATER_OK = "mdi:water-check"
 ICON_WATER_FILTER = "mdi:air-filter"
 ICON_WATER_PUMP = "mdi:water-pump"
+UNIT_DAY = "d"
 
 
 @dataclass(frozen=True)
@@ -98,8 +102,6 @@ RAW_BYTE_SENSORS = (
     RawByteSensor("c5_02_unknown4", "C5 02 unknown 4"),
     RawByteSensor("c5_02_unknown7", "C5 02 unknown 7"),
     RawByteSensor("c5_03_unknown2", "C5 03 unknown 2"),
-    RawByteSensor("c5_03_unknown3", "C5 03 unknown 3"),
-    RawByteSensor("c5_03_unknown4", "C5 03 unknown 4"),
     RawByteSensor("c5_03_unknown6", "C5 03 unknown 6"),
     RawByteSensor("c5_04_unknown1", "C5 04 unknown 1"),
     RawByteSensor("c5_04_unknown2", "C5 04 unknown 2"),
@@ -204,6 +206,16 @@ ENTITIES_SCHEMA = cv.Schema(
             state_class=STATE_CLASS_MEASUREMENT,
         ),
         cv.Optional(
+            CONF_OPERATING_LIFETIME,
+            default={CONF_NAME: "Operating lifetime"},
+        ): sensor.sensor_schema(
+            unit_of_measurement=UNIT_DAY,
+            accuracy_decimals=1,
+            filters=[{"delta": 0}],
+            device_class=DEVICE_CLASS_DURATION,
+            state_class=STATE_CLASS_TOTAL_INCREASING,
+        ),
+        cv.Optional(
             CONF_BOOTING, default={CONF_NAME: "Booting"}
         ): binary_sensor.binary_sensor_schema(
             icon=ICON_RESTART,
@@ -264,6 +276,11 @@ async def to_code(config):
         )
 
     cg.add(var.set_tds_sensor(await sensor.new_sensor(entities_config[CONF_TDS])))
+    cg.add(
+        var.set_operating_lifetime_sensor(
+            await sensor.new_sensor(entities_config[CONF_OPERATING_LIFETIME])
+        )
+    )
     booting = await binary_sensor.new_binary_sensor(entities_config[CONF_BOOTING])
     cg.add(var.set_booting_sensor(booting))
     flushing = await binary_sensor.new_binary_sensor(entities_config[CONF_FLUSHING])

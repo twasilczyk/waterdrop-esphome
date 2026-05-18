@@ -128,10 +128,10 @@ struct MessageC5Slot03 {
   // Very stable, but heavily oscillating when between values.
   uint8_t unknown2 = 0x0E;
 
-  // unknown3=H, unknown4=L. Total hours powered on.
-  // Will wrap around after 7.5 years, carries 0.3% error (counts a full day after 24:05 hours).
-  uint8_t unknown3 = 0x01;
-  uint8_t unknown4 = 0xB0;
+  // Total time RO unit was powered on.
+  endian::big_uint16_t operating_lifetime_hours = 48;
+  // RO firmware counts a full day after 24:05 hours.
+  static constexpr float OPERATING_LIFETIME_ERROR = 1440.0f / 1445.0f;
 
   uint8_t unknown5 = 0x00;
 
