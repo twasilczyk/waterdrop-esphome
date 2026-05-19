@@ -171,7 +171,7 @@ struct MessageC5Slot05 {
   uint8_t unknown4 = 0x0E;  // Correlated with MessageC5Slot03::unknown2
   uint8_t unknown5 = 0x00;
   uint8_t unknown6 = 0x00;
-  uint8_t unknown7 = 0x00;
+  uint8_t unknown7 = 0x00;  // 0 when idle, 1 roughly on E03 (turned 1->0 27s after E03 cleared).
 };
 
 using MessageC5 = message_variant<frame::Command::COMMAND_C5,
@@ -202,7 +202,11 @@ struct Message22Request {
    * Original faucet requests slots in the following order:
    * 0x0D, 0x01, 0x0E, 0x0F, 0x03, 0x02
    *
-   * TODO: Investigate if there's any other slots on RO unit.
+   * TODO: Investigate other slots (highest bit is ignored):
+   * SS 01 00 00 CA xx xx xx xx (SS=0, 4, 6, 8-12, 17-127)
+   * 05 00 00 00 xx 00 00 00 00
+   * 07 00 00 00 00 00 00 00 00
+   * 10 00 00 00 00 00 00 66 22
    */
   Message22Slot slot;
 

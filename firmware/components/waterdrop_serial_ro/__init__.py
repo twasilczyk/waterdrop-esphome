@@ -3,12 +3,14 @@ import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import (
     binary_sensor,
+    number,
     sensor,
     switch,
     text_sensor,
     waterdrop_serial,
 )
 from esphome.const import (
+    CONF_MODE,
     CONF_NAME,
     DEVICE_CLASS_DURATION,
     DEVICE_CLASS_PROBLEM,
@@ -24,8 +26,9 @@ from esphome.const import (
 AUTO_LOAD = [
     "binary_sensor",
     "cxxflags",
+    "number",  # request_unknown_values=true
     "sensor",
-    "switch",
+    "switch",  # request_unknown_values=false
     "text_sensor",
     "waterdrop_serial",
 ]
@@ -37,6 +40,7 @@ WaterdropSerialRo = waterdrop_serial_ro_ns.class_(
     "WaterdropSerialRo", waterdrop_serial.WaterdropSerial
 )
 DiagnosticSwitch = waterdrop_serial_ro_ns.class_("DiagnosticSwitch", switch.Switch)
+DiagnosticNumber = waterdrop_serial_ro_ns.class_("DiagnosticNumber", number.Number)
 waterdrop_serial_ro_filter_ns = waterdrop_serial_ro_ns.namespace("filter")
 FilterType = waterdrop_serial_ro_filter_ns.enum("Type", is_class=True)
 FilterSensors = waterdrop_serial_ro_filter_ns.struct("Sensors")
@@ -50,6 +54,7 @@ CONF_REMAINING_LIFE = "remaining_life"
 CONF_REMAINING_PERCENT = "remaining_percent"
 CONF_TDS = "tds"
 CONF_OPERATING_LIFETIME = "operating_lifetime"
+CONF_REQUEST_UNKNOWN_VALUES = "request_unknown_values"
 CONF_TOTAL_LIFE = "total_life"
 CONF_UNEXPECTED_FRAME = "unexpected_frame"
 
@@ -79,6 +84,13 @@ class ErrorType:
 class RawByteSensor:
     key: str
     name: str
+
+
+@dataclass(frozen=True)
+class RequestUnknownNumber:
+    key: str
+    name: str
+    icon: str = ICON_RAW_BYTE
 
 
 FILTERS = (
@@ -124,6 +136,17 @@ RAW_BYTE_SENSORS = (
     RawByteSensor("22_0e_unknown6", "22 0E unknown 6"),
     RawByteSensor("22_0e_unknown7", "22 0E unknown 7"),
     RawByteSensor("22_0f_unknown1", "22 0F unknown 1"),
+)
+
+REQUEST_UNKNOWN_NUMBERS = (
+    RequestUnknownNumber("slot_pick", "Slot pick"),
+    RequestUnknownNumber("request_unknown1", "Request unknown 1"),
+    RequestUnknownNumber("request_unknown2", "Request unknown 2"),
+    RequestUnknownNumber("faucet_state", "Faucet state", ICON_FAUCET),
+    RequestUnknownNumber("request_unknown3", "Request unknown 3"),
+    RequestUnknownNumber("request_unknown4", "Request unknown 4"),
+    RequestUnknownNumber("request_unknown5", "Request unknown 5"),
+    RequestUnknownNumber("request_unknown6", "Request unknown 6"),
 )
 
 
@@ -196,6 +219,23 @@ RAW_BYTE_CONFIG_SCHEMA = {
     for raw_byte in RAW_BYTE_SENSORS
 }
 
+REQUEST_UNKNOWN_NUMBER_CONFIG_SCHEMA = {
+    cv.Optional(
+        request_unknown.key, default={CONF_NAME: request_unknown.name}
+    ): number.number_schema(
+        DiagnosticNumber,
+        icon=request_unknown.icon,
+        entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+    ).extend(
+        {
+            cv.Optional(CONF_MODE, default="BOX"): cv.enum(
+                number.NUMBER_MODES, upper=True
+            ),
+        }
+    )
+    for request_unknown in REQUEST_UNKNOWN_NUMBERS
+}
+
 ENTITIES_SCHEMA = cv.Schema(
     {
         cv.Optional(CONF_TDS, default={CONF_NAME: "TDS"}): sensor.sensor_schema(
@@ -228,6 +268,7 @@ ENTITIES_SCHEMA = cv.Schema(
             device_class=DEVICE_CLASS_RUNNING,
         ),
         **RAW_BYTE_CONFIG_SCHEMA,
+        **REQUEST_UNKNOWN_NUMBER_CONFIG_SCHEMA,
         **ERROR_CONFIG_SCHEMA,
         **FILTER_CONFIG_SCHEMA,
         cv.Optional(
@@ -251,6 +292,7 @@ ENTITIES_SCHEMA = cv.Schema(
 CONFIG_SCHEMA = cv.Schema(
     {
         cv.GenerateID(): cv.declare_id(WaterdropSerialRo),
+        cv.Optional(CONF_REQUEST_UNKNOWN_VALUES, default=False): cv.boolean,
         cv.Optional(CONF_ENTITIES, default={}): ENTITIES_SCHEMA,
     }
 ).extend(waterdrop_serial.WATERDROP_SERIAL_SCHEMA)
@@ -298,10 +340,26 @@ async def to_code(config):
     ]
     cg.add(var.set_raw_byte_sensors(cg.ArrayInitializer(*raw_byte_sensors)))
 
+    if config[CONF_REQUEST_UNKNOWN_VALUES]:
+        cg.add_define("USE_WATERDROP_SERIAL_RO_REQUEST_UNKNOWN_VALUES")
+        request_unknown_numbers = [
+            await number.new_number(
+                entities_config[request_unknown.key],
+                min_value=0,
+                max_value=255,
+                step=1,
+            )
+            for request_unknown in REQUEST_UNKNOWN_NUMBERS
+        ]
+        cg.add(
+            var.set_request_unknown_numbers(cg.ArrayInitializer(*request_unknown_numbers))
+        )
+
     unexpected_frame = await text_sensor.new_text_sensor(
         entities_config[CONF_UNEXPECTED_FRAME]
     )
     cg.add(var.set_unexpected_frame_sensor(unexpected_frame))
 
-    faucet_state_switch = await switch.new_switch(entities_config[CONF_FAUCET_OPEN])
-    cg.add(var.set_faucet_state_switch(faucet_state_switch))
+    if not config[CONF_REQUEST_UNKNOWN_VALUES]:
+        faucet_state_switch = await switch.new_switch(entities_config[CONF_FAUCET_OPEN])
+        cg.add(var.set_faucet_state_switch(faucet_state_switch))

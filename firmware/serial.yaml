@@ -22,6 +22,7 @@ uart:
 waterdrop_serial_ro:
   id: waterdrop_ro
   uart_id: uart_ro
+  request_unknown_values: true
 
 waterdrop_serial_faucet:
   id: waterdrop_faucet

@@ -1,10 +1,18 @@
 #pragma once
 
+#include "esphome/core/defines.h"
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow"
+#ifdef USE_WATERDROP_SERIAL_RO_REQUEST_UNKNOWN_VALUES
+#include "esphome/components/number/number.h"
+#else
 #include "esphome/components/switch/switch.h"
+#endif
 #pragma GCC diagnostic pop
 #include "esphome/components/waterdrop_serial/frame.h"
+#ifdef USE_WATERDROP_SERIAL_RO_REQUEST_UNKNOWN_VALUES
+#include "esphome/components/waterdrop_serial/message.h"
+#endif
 #include "esphome/components/waterdrop_serial/waterdrop_serial.h"
 #include "esphome/components/waterdrop_serial_ro/filter.h"
 
@@ -26,14 +34,47 @@ class TextSensor;
 
 namespace esphome::waterdrop_serial::ro {
 
+#ifdef USE_WATERDROP_SERIAL_RO_REQUEST_UNKNOWN_VALUES
+class DiagnosticNumber : public number::Number {
+ public:
+  void set_initial_value(uint8_t value);
+  uint8_t value() const { return value_; }
+
+ protected:
+  void control(float value) override;
+
+ private:
+  uint8_t value_ = 0;
+};
+#else
 class DiagnosticSwitch : public switch_::Switch {
  protected:
   void write_state(bool new_state) override;
 };
+#endif
 
 class WaterdropSerialRo : public WaterdropSerial {
  public:
   static constexpr size_t ERROR_TYPES_COUNT = 4;
+
+#ifdef USE_WATERDROP_SERIAL_RO_REQUEST_UNKNOWN_VALUES
+  static constexpr size_t REQUEST_UNKNOWN_NUMBER_TYPES_COUNT = 8;
+
+  enum class RequestUnknownNumber : size_t {
+    SLOT_PICK,
+    UNKNOWN1,
+    UNKNOWN2,
+    FAUCET_STATE,
+    UNKNOWN3,
+    UNKNOWN4,
+    UNKNOWN5,
+    UNKNOWN6,
+    COUNT_,
+  };
+  static_assert(REQUEST_UNKNOWN_NUMBER_TYPES_COUNT ==
+                static_cast<size_t>(RequestUnknownNumber::COUNT_));
+#endif
+
   enum class RawByteSensor : size_t {
     C2_STATE,
     C2_UNKNOWN,
@@ -82,7 +123,12 @@ class WaterdropSerialRo : public WaterdropSerial {
   void set_raw_byte_sensors(
       std::array<sensor::Sensor *, RAW_BYTE_SENSOR_TYPES_COUNT> sensors);
   void set_unexpected_frame_sensor(text_sensor::TextSensor *sensor);
+#ifdef USE_WATERDROP_SERIAL_RO_REQUEST_UNKNOWN_VALUES
+  void set_request_unknown_numbers(
+      std::array<DiagnosticNumber *, REQUEST_UNKNOWN_NUMBER_TYPES_COUNT> numbers);
+#else
   void set_faucet_state_switch(DiagnosticSwitch *faucet_state_switch);
+#endif
 
  protected:
   void handle_frame(const frame::Frame &frame) override;
@@ -97,6 +143,9 @@ class WaterdropSerialRo : public WaterdropSerial {
   filter::Filter &filter_(filter::Type filter);
 
   uint8_t request_slot_ = 0;
+#ifdef USE_WATERDROP_SERIAL_RO_REQUEST_UNKNOWN_VALUES
+  message::Message22Slot request_slot_pick_ = message::Message22Slot::SLOT_01;
+#endif
   std::array<filter::Filter, static_cast<size_t>(filter::Type::COUNT_)> filters_{};
   sensor::Sensor *tds_sensor_ = nullptr;
   sensor::Sensor *operating_lifetime_sensor_ = nullptr;
@@ -105,7 +154,12 @@ class WaterdropSerialRo : public WaterdropSerial {
   std::array<binary_sensor::BinarySensor *, ERROR_TYPES_COUNT> error_sensors_{};
   std::array<sensor::Sensor *, RAW_BYTE_SENSOR_TYPES_COUNT> raw_byte_sensors_{};
   text_sensor::TextSensor *unexpected_frame_sensor_ = nullptr;
+#ifdef USE_WATERDROP_SERIAL_RO_REQUEST_UNKNOWN_VALUES
+  std::array<DiagnosticNumber *, REQUEST_UNKNOWN_NUMBER_TYPES_COUNT>
+      request_unknown_numbers_{};
+#else
   DiagnosticSwitch *faucet_state_switch_ = nullptr;
+#endif
 };
 
 }  // namespace esphome::waterdrop_serial::ro
