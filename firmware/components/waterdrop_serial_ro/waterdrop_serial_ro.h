@@ -28,9 +28,11 @@ namespace esphome::sensor {
 class Sensor;
 }
 
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
 namespace esphome::text_sensor {
 class TextSensor;
 }
+#endif
 
 namespace esphome::waterdrop_serial::ro {
 
@@ -74,6 +76,7 @@ class WaterdropSerialRo : public WaterdropSerial {
                 static_cast<size_t>(RequestUnknownNumber::COUNT_));
 #endif
 
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
   enum class RawByteSensor : size_t {
     C2_STATE,
     C2_UNKNOWN,
@@ -109,6 +112,7 @@ class WaterdropSerialRo : public WaterdropSerial {
   };
   static constexpr size_t RAW_BYTE_SENSOR_TYPES_COUNT =
       static_cast<size_t>(RawByteSensor::COUNT_);
+#endif
 
   WaterdropSerialRo();
   void dump_config() override;
@@ -120,9 +124,11 @@ class WaterdropSerialRo : public WaterdropSerial {
   void set_flushing_sensor(binary_sensor::BinarySensor *sensor);
   void set_error_sensors(
       std::array<binary_sensor::BinarySensor *, ERROR_TYPES_COUNT> sensors);
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
   void set_raw_byte_sensors(
       std::array<sensor::Sensor *, RAW_BYTE_SENSOR_TYPES_COUNT> sensors);
   void set_unexpected_frame_sensor(text_sensor::TextSensor *sensor);
+#endif
 #ifdef USE_WATERDROP_SERIAL_RO_REQUEST_UNKNOWN_VALUES
   void set_request_unknown_numbers(
       std::array<DiagnosticNumber *, REQUEST_UNKNOWN_NUMBER_TYPES_COUNT> numbers);
@@ -138,8 +144,10 @@ class WaterdropSerialRo : public WaterdropSerial {
   void handle_state_message_(const frame::Frame &frame);
   void handle_c5_message_(const frame::Frame &frame);
   void handle_response_message_(const frame::Frame &frame);
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
   void publish_raw_byte_(RawByteSensor sensor, uint8_t value);
   void publish_unexpected_frame_(const frame::Frame &frame, const char *reason);
+#endif
   filter::Filter &filter_(filter::Type filter);
 #ifdef USE_WATERDROP_SERIAL_RO_REQUEST_UNKNOWN_VALUES
   uint8_t request_unknown_value_(RequestUnknownNumber number) const;
@@ -152,8 +160,10 @@ class WaterdropSerialRo : public WaterdropSerial {
   binary_sensor::BinarySensor *pump_active_sensor_ = nullptr;
   binary_sensor::BinarySensor *flushing_sensor_ = nullptr;
   std::array<binary_sensor::BinarySensor *, ERROR_TYPES_COUNT> error_sensors_{};
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
   std::array<sensor::Sensor *, RAW_BYTE_SENSOR_TYPES_COUNT> raw_byte_sensors_{};
   text_sensor::TextSensor *unexpected_frame_sensor_ = nullptr;
+#endif
 #ifdef USE_WATERDROP_SERIAL_RO_REQUEST_UNKNOWN_VALUES
   std::array<DiagnosticNumber *, REQUEST_UNKNOWN_NUMBER_TYPES_COUNT>
       request_unknown_numbers_{};

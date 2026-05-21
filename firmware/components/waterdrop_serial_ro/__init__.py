@@ -28,7 +28,7 @@ AUTO_LOAD = [
     "number",  # request_unknown_values=true
     "sensor",
     "switch",  # request_unknown_values=false
-    "text_sensor",
+    "text_sensor",  # report_unknown_values=true
     "waterdrop_serial",
 ]
 CODEOWNERS = ["@twasilczyk"]
@@ -53,6 +53,7 @@ CONF_REMAINING_PERCENT = "remaining_percent"
 CONF_TDS = "tds"
 CONF_OPERATING_LIFETIME = "operating_lifetime"
 CONF_PUMP_ACTIVE = "pump_active"
+CONF_REPORT_UNKNOWN_VALUES = "report_unknown_values"
 CONF_REQUEST_UNKNOWN_VALUES = "request_unknown_values"
 CONF_TOTAL_LIFE = "total_life"
 CONF_UNEXPECTED_FRAME = "unexpected_frame"
@@ -213,6 +214,7 @@ RAW_BYTE_CONFIG_SCHEMA = {
         icon=ICON_RAW_BYTE,
         accuracy_decimals=0,
         filters=[{"delta": 0}],
+        state_class=STATE_CLASS_MEASUREMENT,
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
     )
     for raw_byte in RAW_BYTE_SENSORS
@@ -291,6 +293,7 @@ ENTITIES_SCHEMA = cv.Schema(
 CONFIG_SCHEMA = cv.Schema(
     {
         cv.GenerateID(): cv.declare_id(WaterdropSerialRo),
+        cv.Optional(CONF_REPORT_UNKNOWN_VALUES, default=False): cv.boolean,
         cv.Optional(CONF_REQUEST_UNKNOWN_VALUES, default=False): cv.boolean,
         cv.Optional(CONF_ENTITIES, default={}): ENTITIES_SCHEMA,
     }
@@ -333,11 +336,17 @@ async def to_code(config):
     ]
     cg.add(var.set_error_sensors(cg.ArrayInitializer(*error_sensors)))
 
-    raw_byte_sensors = [
-        await sensor.new_sensor(entities_config[raw_byte.key])
-        for raw_byte in RAW_BYTE_SENSORS
-    ]
-    cg.add(var.set_raw_byte_sensors(cg.ArrayInitializer(*raw_byte_sensors)))
+    if config[CONF_REPORT_UNKNOWN_VALUES]:
+        cg.add_define("USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES")
+        raw_byte_sensors = [
+            await sensor.new_sensor(entities_config[raw_byte.key])
+            for raw_byte in RAW_BYTE_SENSORS
+        ]
+        cg.add(var.set_raw_byte_sensors(cg.ArrayInitializer(*raw_byte_sensors)))
+        unexpected_frame = await text_sensor.new_text_sensor(
+            entities_config[CONF_UNEXPECTED_FRAME]
+        )
+        cg.add(var.set_unexpected_frame_sensor(unexpected_frame))
 
     if config[CONF_REQUEST_UNKNOWN_VALUES]:
         cg.add_define("USE_WATERDROP_SERIAL_RO_REQUEST_UNKNOWN_VALUES")
@@ -353,11 +362,6 @@ async def to_code(config):
         cg.add(
             var.set_request_unknown_numbers(cg.ArrayInitializer(*request_unknown_numbers))
         )
-
-    unexpected_frame = await text_sensor.new_text_sensor(
-        entities_config[CONF_UNEXPECTED_FRAME]
-    )
-    cg.add(var.set_unexpected_frame_sensor(unexpected_frame))
 
     if not config[CONF_REQUEST_UNKNOWN_VALUES]:
         faucet_state_switch = await switch.new_switch(entities_config[CONF_FAUCET_OPEN])

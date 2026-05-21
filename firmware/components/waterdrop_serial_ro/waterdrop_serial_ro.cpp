@@ -3,7 +3,9 @@
 
 #include "esphome/components/binary_sensor/binary_sensor.h"
 #include "esphome/components/sensor/sensor.h"
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
 #include "esphome/components/text_sensor/text_sensor.h"
+#endif
 #include "esphome/components/waterdrop_serial/message.h"
 #include "esphome/core/log.h"
 
@@ -20,9 +22,11 @@ static constexpr std::array<uint8_t, WaterdropSerialRo::ERROR_TYPES_COUNT> ERROR
     0x01,  // E03
     0x02,  // E04
 };
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
 static constexpr uint8_t KNOWN_ERROR_MASK = static_cast<uint8_t>(
     ERROR_MASKS[0] | ERROR_MASKS[1] | ERROR_MASKS[2] | ERROR_MASKS[3]);
 static constexpr uint8_t UNKNOWN_ERROR_MASK = static_cast<uint8_t>(~KNOWN_ERROR_MASK);
+#endif
 
 static constexpr float HOURS_PER_DAY = 24.0f;
 
@@ -52,7 +56,9 @@ WaterdropSerialRo::WaterdropSerialRo() : WaterdropSerial(TAG, frame::Source::RO)
 void WaterdropSerialRo::dump_config() {
   ESP_LOGCONFIG(TAG, "Waterdrop Serial RO:");
   WaterdropSerial::dump_config();
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
   LOG_TEXT_SENSOR("  ", "Unexpected frame", unexpected_frame_sensor_);
+#endif
 #ifdef USE_WATERDROP_SERIAL_RO_REQUEST_UNKNOWN_VALUES
   LOG_NUMBER(
       "  ", "Request Slot Pick",
@@ -111,6 +117,7 @@ void WaterdropSerialRo::set_error_sensors(
   error_sensors_ = sensors;
 }
 
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
 void WaterdropSerialRo::set_raw_byte_sensors(
     std::array<sensor::Sensor *, RAW_BYTE_SENSOR_TYPES_COUNT> sensors) {
   assert(std::all_of(sensors.begin(), sensors.end(), [](auto *sensor) {
@@ -123,6 +130,7 @@ void WaterdropSerialRo::set_unexpected_frame_sensor(text_sensor::TextSensor *sen
   assert(sensor != nullptr);
   unexpected_frame_sensor_ = sensor;
 }
+#endif
 
 #ifdef USE_WATERDROP_SERIAL_RO_REQUEST_UNKNOWN_VALUES
 void WaterdropSerialRo::set_request_unknown_numbers(
@@ -160,11 +168,13 @@ void WaterdropSerialRo::handle_frame(const frame::Frame &frame) {
 
 void WaterdropSerialRo::handle_state_message_(const frame::Frame &frame) {
   const auto &message = frame.as<message::MessageC2>();
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
   publish_raw_byte_(RawByteSensor::C2_STATE, message.state);
   publish_raw_byte_(RawByteSensor::C2_UNKNOWN, message.unknown);
   publish_raw_byte_(
       RawByteSensor::C2_UNKNOWN_ERROR,
       static_cast<uint8_t>(message.error & UNKNOWN_ERROR_MASK));
+#endif
 
   if (pump_active_sensor_ != nullptr) {
     pump_active_sensor_->publish_state(message.state != 0xFF);
@@ -187,6 +197,7 @@ void WaterdropSerialRo::handle_c5_message_(const frame::Frame &frame) {
   const auto &response = frame.as<message::MessageC5>();
   switch (response.tag()) {
     case message::MessageC5Slot::SLOT_01: {
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
       const auto &slot = response.get<message::MessageC5Slot01>();
       const auto expected = message::MessageC5Slot01{};
       if (slot.unknown1 != expected.unknown1 || slot.unknown2 != expected.unknown2 ||
@@ -195,9 +206,11 @@ void WaterdropSerialRo::handle_c5_message_(const frame::Frame &frame) {
         publish_unexpected_frame_(frame, "Unexpected C5 slot 01");
       }
       publish_raw_byte_(RawByteSensor::C5_SLOT_01_UNKNOWN7, slot.unknown7);
+#endif
       break;
     }
     case message::MessageC5Slot::SLOT_02: {
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
       const auto &slot = response.get<message::MessageC5Slot02>();
       const auto expected = message::MessageC5Slot02{};
       if (slot.unknown1 != expected.unknown1 || slot.unknown2 != expected.unknown2 ||
@@ -207,6 +220,7 @@ void WaterdropSerialRo::handle_c5_message_(const frame::Frame &frame) {
       }
       publish_raw_byte_(RawByteSensor::C5_SLOT_02_UNKNOWN4, slot.unknown4);
       publish_raw_byte_(RawByteSensor::C5_SLOT_02_UNKNOWN7, slot.unknown7);
+#endif
       break;
     }
     case message::MessageC5Slot::SLOT_03: {
@@ -217,6 +231,7 @@ void WaterdropSerialRo::handle_c5_message_(const frame::Frame &frame) {
             * slot.OPERATING_LIFETIME_ERROR / HOURS_PER_DAY);
       }
 
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
       const auto expected = message::MessageC5Slot03{};
       if (slot.unknown1 != expected.unknown1 || slot.unknown5 != expected.unknown5 ||
           slot.unknown7 != expected.unknown7) {
@@ -224,9 +239,11 @@ void WaterdropSerialRo::handle_c5_message_(const frame::Frame &frame) {
       }
       publish_raw_byte_(RawByteSensor::C5_SLOT_03_UNKNOWN2, slot.unknown2);
       publish_raw_byte_(RawByteSensor::C5_SLOT_03_UNKNOWN6, slot.unknown6);
+#endif
       break;
     }
     case message::MessageC5Slot::SLOT_04: {
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
       const auto &slot = response.get<message::MessageC5Slot04>();
       const auto expected = message::MessageC5Slot04{};
       if (slot.unknown3 != expected.unknown3 || slot.unknown4 != expected.unknown4 ||
@@ -237,9 +254,11 @@ void WaterdropSerialRo::handle_c5_message_(const frame::Frame &frame) {
       publish_raw_byte_(RawByteSensor::C5_SLOT_04_UNKNOWN2, slot.unknown2);
       publish_raw_byte_(RawByteSensor::C5_SLOT_04_UNKNOWN6, slot.unknown6);
       publish_raw_byte_(RawByteSensor::C5_SLOT_04_UNKNOWN7, slot.unknown7);
+#endif
       break;
     }
     case message::MessageC5Slot::SLOT_05: {
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
       const auto &slot = response.get<message::MessageC5Slot05>();
       const auto expected = message::MessageC5Slot05{};
       if (slot.unknown1 != expected.unknown1 || slot.unknown2 != expected.unknown2 ||
@@ -249,10 +268,13 @@ void WaterdropSerialRo::handle_c5_message_(const frame::Frame &frame) {
       }
       publish_raw_byte_(RawByteSensor::C5_SLOT_05_UNKNOWN3, slot.unknown3);
       publish_raw_byte_(RawByteSensor::C5_SLOT_05_UNKNOWN4, slot.unknown4);
+#endif
       break;
     }
     default:
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
       publish_unexpected_frame_(frame, "Unexpected C5 slot");
+#endif
       break;
   }
 }
@@ -261,6 +283,7 @@ void WaterdropSerialRo::handle_response_message_(const frame::Frame &frame) {
   const auto &response = frame.as<message::Message22Response>();
   switch (response.tag()) {
     case message::Message22Slot::SLOT_01: {
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
       const auto &slot = response.get<message::Message22Slot01>();
       const auto expected = message::Message22Slot01{};
       if (slot.unknown1 != expected.unknown1 || slot.unknown3 != expected.unknown3 ||
@@ -271,26 +294,33 @@ void WaterdropSerialRo::handle_response_message_(const frame::Frame &frame) {
       publish_raw_byte_(RawByteSensor::SLOT_22_01_UNKNOWN2, slot.unknown2);
       publish_raw_byte_(RawByteSensor::SLOT_22_01_UNKNOWN4, slot.unknown4);
       publish_raw_byte_(RawByteSensor::SLOT_22_01_UNKNOWN6, slot.unknown6);
+#endif
       break;
     }
     case message::Message22Slot::SLOT_0F: {
       const auto &slot = response.get<message::Message22Slot0F>();
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
       const auto expected = message::Message22Slot0F{};
       if (slot.unknown2 != expected.unknown2) {
         publish_unexpected_frame_(frame, "Unexpected 22 slot 0F");
       }
+#endif
       filter_(filter::Type::CF).set_total_life(slot.filter_total_life_cf);
       filter_(filter::Type::RO).set_total_life(slot.filter_total_life_ro);
       filter_(filter::Type::CB).set_total_life(slot.filter_total_life_cb);
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
       publish_raw_byte_(RawByteSensor::SLOT_22_0F_UNKNOWN1, slot.unknown1);
+#endif
       break;
     }
     case message::Message22Slot::SLOT_02: {
       const auto &slot = response.get<message::Message22Slot02>();
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
       const auto expected = message::Message22Slot02{};
       if (slot.unknown1 != expected.unknown1 || slot.unknown2 != expected.unknown2) {
         publish_unexpected_frame_(frame, "Unexpected 22 slot 02");
       }
+#endif
       filter_(filter::Type::CF).set_used_life(slot.filter_used_life_cf);
       filter_(filter::Type::RO).set_used_life(slot.filter_used_life_ro);
       filter_(filter::Type::CB).set_used_life(slot.filter_used_life_cb);
@@ -298,19 +328,24 @@ void WaterdropSerialRo::handle_response_message_(const frame::Frame &frame) {
     }
     case message::Message22Slot::SLOT_03: {
       const auto &slot = response.get<message::Message22Slot03>();
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
       const auto expected = message::Message22Slot03{};
       if (slot.unknown1 != expected.unknown1 || slot.unknown2 != expected.unknown2 ||
           slot.unknown3 != expected.unknown3 || slot.unknown4 != expected.unknown4 ||
           slot.unknown5 != expected.unknown5) {
         publish_unexpected_frame_(frame, "Unexpected 22 slot 03");
       }
+#endif
       if (tds_sensor_ != nullptr) {
         tds_sensor_->publish_state(slot.tds);
       }
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
       publish_raw_byte_(RawByteSensor::SLOT_22_03_UNKNOWN6, slot.unknown6);
+#endif
       break;
     }
     case message::Message22Slot::SLOT_05: {
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
       const auto &slot = response.get<message::Message22Slot05>();
       const auto expected = message::Message22Slot05{};
       if (slot.unknown1 != expected.unknown1 || slot.unknown2 != expected.unknown2 ||
@@ -320,9 +355,11 @@ void WaterdropSerialRo::handle_response_message_(const frame::Frame &frame) {
         publish_unexpected_frame_(frame, "Unexpected 22 slot 05");
       }
       publish_raw_byte_(RawByteSensor::SLOT_22_05_UNKNOWN4, slot.unknown4);
+#endif
       break;
     }
     case message::Message22Slot::SLOT_0D: {
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
       const auto &slot = response.get<message::Message22Slot0D>();
       const auto expected = message::Message22Slot0D{};
       if (slot.unknown1 != expected.unknown1 || slot.unknown3 != expected.unknown3 ||
@@ -333,9 +370,11 @@ void WaterdropSerialRo::handle_response_message_(const frame::Frame &frame) {
       publish_raw_byte_(RawByteSensor::SLOT_22_0D_UNKNOWN2, slot.unknown2);
       publish_raw_byte_(RawByteSensor::SLOT_22_0D_UNKNOWN4, slot.unknown4);
       publish_raw_byte_(RawByteSensor::SLOT_22_0D_UNKNOWN6, slot.unknown6);
+#endif
       break;
     }
     case message::Message22Slot::SLOT_0E: {
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
       const auto &slot = response.get<message::Message22Slot0E>();
       const auto expected = message::Message22Slot0E{};
       if (slot.unknown8 != expected.unknown8) {
@@ -348,14 +387,18 @@ void WaterdropSerialRo::handle_response_message_(const frame::Frame &frame) {
       publish_raw_byte_(RawByteSensor::SLOT_22_0E_UNKNOWN5, slot.unknown5);
       publish_raw_byte_(RawByteSensor::SLOT_22_0E_UNKNOWN6, slot.unknown6);
       publish_raw_byte_(RawByteSensor::SLOT_22_0E_UNKNOWN7, slot.unknown7);
+#endif
       break;
     }
     default:
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
       publish_unexpected_frame_(frame, "Unexpected 22 slot");
+#endif
       break;
   }
 }
 
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
 void WaterdropSerialRo::publish_raw_byte_(RawByteSensor sensor, uint8_t value) {
   const auto index = static_cast<size_t>(sensor);
   assert(index < raw_byte_sensors_.size());
@@ -377,6 +420,7 @@ void WaterdropSerialRo::publish_unexpected_frame_(const frame::Frame &frame, con
   state += frame_text;
   unexpected_frame_sensor_->publish_state(state);
 }
+#endif
 
 filter::Filter &WaterdropSerialRo::filter_(filter::Type filter) {
   const auto index = static_cast<size_t>(filter);
@@ -393,10 +437,20 @@ uint8_t WaterdropSerialRo::request_unknown_value_(RequestUnknownNumber number) c
 #endif
 
 void WaterdropSerialRo::send_request_message_() {
-  static constexpr std::array<message::Message22Slot, 7> request_slots{
-      message::Message22Slot::SLOT_0D, message::Message22Slot::SLOT_01, message::Message22Slot::SLOT_0E,
-      message::Message22Slot::SLOT_0F, message::Message22Slot::SLOT_03, message::Message22Slot::SLOT_05,
-      message::Message22Slot::SLOT_02
+  static constexpr std::array request_slots{
+#ifdef USE_WATERDROP_SERIAL_RO_REQUEST_UNKNOWN_VALUES
+      message::Message22Slot{},
+#endif
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
+      message::Message22Slot::SLOT_0D,
+      message::Message22Slot::SLOT_01,
+      message::Message22Slot::SLOT_0E,
+#endif
+      message::Message22Slot::SLOT_0F, message::Message22Slot::SLOT_03,
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
+      message::Message22Slot::SLOT_05,
+#endif
+      message::Message22Slot::SLOT_02,
   };
   auto slot = request_slots[request_slot_++];
   request_slot_ %= request_slots.size();
@@ -424,7 +478,7 @@ void WaterdropSerialRo::send_request_message_() {
 #endif
   };
 #ifdef USE_WATERDROP_SERIAL_RO_REQUEST_UNKNOWN_VALUES
-  if (request.slot == message::Message22Slot::SLOT_01) {
+  if (request.slot == message::Message22Slot{}) {
     request.slot = static_cast<message::Message22Slot>(
         request_unknown_value_(RequestUnknownNumber::SLOT_PICK));
   }
