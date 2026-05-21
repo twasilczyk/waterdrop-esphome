@@ -116,7 +116,7 @@ class WaterdropSerialRo : public WaterdropSerial {
   void set_filter_sensors(filter::Type filter, filter::Sensors sensors);
   void set_tds_sensor(sensor::Sensor *sensor);
   void set_operating_lifetime_sensor(sensor::Sensor *sensor);
-  void set_booting_sensor(binary_sensor::BinarySensor *sensor);
+  void set_pump_active_sensor(binary_sensor::BinarySensor *sensor);
   void set_flushing_sensor(binary_sensor::BinarySensor *sensor);
   void set_error_sensors(
       std::array<binary_sensor::BinarySensor *, ERROR_TYPES_COUNT> sensors);
@@ -149,7 +149,7 @@ class WaterdropSerialRo : public WaterdropSerial {
   std::array<filter::Filter, static_cast<size_t>(filter::Type::COUNT_)> filters_{};
   sensor::Sensor *tds_sensor_ = nullptr;
   sensor::Sensor *operating_lifetime_sensor_ = nullptr;
-  binary_sensor::BinarySensor *booting_sensor_ = nullptr;
+  binary_sensor::BinarySensor *pump_active_sensor_ = nullptr;
   binary_sensor::BinarySensor *flushing_sensor_ = nullptr;
   std::array<binary_sensor::BinarySensor *, ERROR_TYPES_COUNT> error_sensors_{};
   std::array<sensor::Sensor *, RAW_BYTE_SENSOR_TYPES_COUNT> raw_byte_sensors_{};

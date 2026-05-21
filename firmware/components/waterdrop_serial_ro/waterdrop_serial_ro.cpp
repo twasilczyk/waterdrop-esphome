@@ -95,8 +95,8 @@ void WaterdropSerialRo::set_operating_lifetime_sensor(sensor::Sensor *sensor) {
   operating_lifetime_sensor_ = sensor;
 }
 
-void WaterdropSerialRo::set_booting_sensor(binary_sensor::BinarySensor *sensor) {
-  booting_sensor_ = sensor;
+void WaterdropSerialRo::set_pump_active_sensor(binary_sensor::BinarySensor *sensor) {
+  pump_active_sensor_ = sensor;
 }
 
 void WaterdropSerialRo::set_flushing_sensor(binary_sensor::BinarySensor *sensor) {
@@ -166,8 +166,8 @@ void WaterdropSerialRo::handle_state_message_(const frame::Frame &frame) {
       RawByteSensor::C2_UNKNOWN_ERROR,
       static_cast<uint8_t>(message.error & UNKNOWN_ERROR_MASK));
 
-  if (booting_sensor_ != nullptr) {
-    booting_sensor_->publish_state(message.state == 0xFF);
+  if (pump_active_sensor_ != nullptr) {
+    pump_active_sensor_->publish_state(message.state != 0xFF);
   }
 
   if (flushing_sensor_ != nullptr) {

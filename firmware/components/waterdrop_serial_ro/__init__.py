@@ -16,7 +16,6 @@ from esphome.const import (
     DEVICE_CLASS_PROBLEM,
     DEVICE_CLASS_RUNNING,
     ENTITY_CATEGORY_DIAGNOSTIC,
-    ICON_RESTART,
     STATE_CLASS_MEASUREMENT,
     STATE_CLASS_TOTAL_INCREASING,
     UNIT_PARTS_PER_MILLION,
@@ -45,7 +44,6 @@ waterdrop_serial_ro_filter_ns = waterdrop_serial_ro_ns.namespace("filter")
 FilterType = waterdrop_serial_ro_filter_ns.enum("Type", is_class=True)
 FilterSensors = waterdrop_serial_ro_filter_ns.struct("Sensors")
 
-CONF_BOOTING = "booting"
 CONF_ENTITIES = "entities"
 CONF_FAUCET_OPEN = "faucet_open"
 CONF_FLUSHING = "flushing"
@@ -54,6 +52,7 @@ CONF_REMAINING_LIFE = "remaining_life"
 CONF_REMAINING_PERCENT = "remaining_percent"
 CONF_TDS = "tds"
 CONF_OPERATING_LIFETIME = "operating_lifetime"
+CONF_PUMP_ACTIVE = "pump_active"
 CONF_REQUEST_UNKNOWN_VALUES = "request_unknown_values"
 CONF_TOTAL_LIFE = "total_life"
 CONF_UNEXPECTED_FRAME = "unexpected_frame"
@@ -256,9 +255,9 @@ ENTITIES_SCHEMA = cv.Schema(
             state_class=STATE_CLASS_TOTAL_INCREASING,
         ),
         cv.Optional(
-            CONF_BOOTING, default={CONF_NAME: "Booting"}
+            CONF_PUMP_ACTIVE, default={CONF_NAME: "Pump active"}
         ): binary_sensor.binary_sensor_schema(
-            icon=ICON_RESTART,
+            icon=ICON_WATER_PUMP,
             device_class=DEVICE_CLASS_RUNNING,
         ),
         cv.Optional(
@@ -323,8 +322,8 @@ async def to_code(config):
             await sensor.new_sensor(entities_config[CONF_OPERATING_LIFETIME])
         )
     )
-    booting = await binary_sensor.new_binary_sensor(entities_config[CONF_BOOTING])
-    cg.add(var.set_booting_sensor(booting))
+    pump_active = await binary_sensor.new_binary_sensor(entities_config[CONF_PUMP_ACTIVE])
+    cg.add(var.set_pump_active_sensor(pump_active))
     flushing = await binary_sensor.new_binary_sensor(entities_config[CONF_FLUSHING])
     cg.add(var.set_flushing_sensor(flushing))
 
