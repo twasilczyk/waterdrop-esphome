@@ -94,6 +94,7 @@ class WaterdropSerialRo : public WaterdropSerial {
     SLOT_22_01_UNKNOWN4,
     SLOT_22_01_UNKNOWN6,
     SLOT_22_03_UNKNOWN6,
+    SLOT_22_05_UNKNOWN4,
     SLOT_22_0D_UNKNOWN2,
     SLOT_22_0D_UNKNOWN4,
     SLOT_22_0D_UNKNOWN6,

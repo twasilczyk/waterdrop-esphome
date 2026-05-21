@@ -376,6 +376,18 @@ void WaterdropSerialRo::handle_response_message_(const frame::Frame &frame) {
       publish_raw_byte_(RawByteSensor::SLOT_22_03_UNKNOWN6, slot.unknown6);
       break;
     }
+    case message::Message22Slot::SLOT_05: {
+      const auto &slot = response.get<message::Message22Slot05>();
+      const auto expected = message::Message22Slot05{};
+      if (slot.unknown1 != expected.unknown1 || slot.unknown2 != expected.unknown2 ||
+          slot.unknown3 != expected.unknown3 || slot.unknown5 != expected.unknown5 ||
+          slot.unknown6 != expected.unknown6 || slot.unknown7 != expected.unknown7 ||
+          slot.unknown8 != expected.unknown8) {
+        publish_unexpected_frame_(frame, "Unexpected 22 slot 05");
+      }
+      publish_raw_byte_(RawByteSensor::SLOT_22_05_UNKNOWN4, slot.unknown4);
+      break;
+    }
     case message::Message22Slot::SLOT_0D: {
       const auto &slot = response.get<message::Message22Slot0D>();
       const auto expected = message::Message22Slot0D{};
@@ -439,9 +451,10 @@ filter::Filter &WaterdropSerialRo::filter_(filter::Type filter) {
 }
 
 void WaterdropSerialRo::send_request_message_() {
-  static constexpr std::array<message::Message22Slot, 6> request_slots{
+  static constexpr std::array<message::Message22Slot, 7> request_slots{
       message::Message22Slot::SLOT_0D, message::Message22Slot::SLOT_01, message::Message22Slot::SLOT_0E,
-      message::Message22Slot::SLOT_0F, message::Message22Slot::SLOT_03, message::Message22Slot::SLOT_02
+      message::Message22Slot::SLOT_0F, message::Message22Slot::SLOT_03, message::Message22Slot::SLOT_05,
+      message::Message22Slot::SLOT_02
   };
   auto slot = request_slots[request_slot_++];
   request_slot_ %= request_slots.size();

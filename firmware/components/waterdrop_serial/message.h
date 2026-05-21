@@ -27,7 +27,9 @@ struct message_variant : packed_variant<Alternatives...> {
  * Filling glass with water (without pressure tank):
  *  - C5u2 doesn't change at all
  *  - First 3 seconds: C2 oscillates between F1 and FF with 650ms period
- *  - Then C5u2 joins, oscillating between F1 and FF with 2.5s period
+ *  - Then C5u1 joins, oscillating between F1 and FF with 2.5s period
+ *  - However, when I cleared out "activity every 5 minutes", both started at the same time,
+ *    oscillating slow once and then C2 continued fast and C5u1 slow.
  *
  * Filling pitcher or glass with water (with pressure tank):
  *  - C5u2 doesn't change at all
@@ -43,6 +45,9 @@ struct message_variant : packed_variant<Alternatives...> {
  *      water use) after Variant C
  *    - Variant B runs for 3 cycles after Variant A
  *    - Variant C runs for 5 cycles after Variant B (but sometimes 8, first time after water use)
+ *  - I was able to clear this by claiming "the faucet is open", so there was no activity for the
+ *    next 8 hours until the next use. But switching to this state doesn't clear it alone - it has
+ *    to happen right before the 5-minute activity. Then, it triggers pump for 1 minute.
  */
 
 /* A couple values are oscillating together 14 +/- 1:
@@ -58,7 +63,7 @@ struct MessageC2 {
   /**
    * State of the RO unit, but also having effect on faucet screen state.
    *
-   * 0xF1 - pump running (or no input water when trying to run, but before E03 is detected)
+   * 0xF1 - pump running OR no input water when trying to run (but before E03 is detected)
    * 0xF7 - briefly before pump running for every-5-min-flush
    * 0xFF - pump idle
    * 0xF3, 0xF5, 0xF6 - flushing after boot?
@@ -66,9 +71,9 @@ struct MessageC2 {
    */
   uint8_t state;
 
-  /* No effect known. Pump state?
+  /* Input valve state?
    *
-   * 0x03 - pump running (or there's no input water)
+   * 0x03 - pump running OR there's no input water
    * 0x01 - pump idle
    */
   uint8_t unknown = 0x03;
@@ -183,6 +188,7 @@ enum class Message22Slot : uint8_t {
   SLOT_01 = 0x01,
   SLOT_02 = 0x02,
   SLOT_03 = 0x03,
+  SLOT_05 = 0x05,
   SLOT_0D = 0x0D,
   SLOT_0E = 0x0E,
   SLOT_0F = 0x0F,
@@ -202,11 +208,18 @@ struct Message22Request {
    * Original faucet requests slots in the following order:
    * 0x0D, 0x01, 0x0E, 0x0F, 0x03, 0x02
    *
-   * TODO: Investigate other slots (highest bit is ignored):
-   * SS 01 00 00 CA xx xx xx xx (SS=0, 4, 6, 8-12, 17-127)
-   * 05 00 00 00 xx 00 00 00 00
+   * Other slots:
+   * Invalid slot (SS= 0, 4, 6, 8-12, 17-127)
+   * SS 01 00 00 CA xx xx xx yy
+   *  - xx are the same as in last transmitted C5 frame payload
+   *  - yy is that frame's checksum
+   *
+   * Constant slots:
    * 07 00 00 00 00 00 00 00 00
    * 10 00 00 00 00 00 00 66 22
+   *
+   * TODO: Investigate one noisy slot:
+   * 05 00 00 00 xx 00 00 00 00
    */
   Message22Slot slot;
 
@@ -259,6 +272,22 @@ struct Message22Slot03 {
   uint8_t unknown6 = 0x0C;  // Same as MessageC5Slot03::unknown2
 };
 
+struct Message22Slot05 {
+  static constexpr Message22Slot TAG = Message22Slot::SLOT_05;
+
+  uint8_t unknown1 = 0x00;
+  uint8_t unknown2 = 0x00;
+  uint8_t unknown3 = 0x00;
+
+  // values in 0-16 range, ~normal-distributed around 8, dropping when running water.
+  uint8_t unknown4 = 0x00;
+
+  uint8_t unknown5 = 0x00;
+  uint8_t unknown6 = 0x00;
+  uint8_t unknown7 = 0x00;
+  uint8_t unknown8 = 0x00;
+};
+
 // CF, RO, CB (H, L): filter used life. Turns orange at 360 units before red
 struct Message22Slot02 {
   static constexpr Message22Slot TAG = Message22Slot::SLOT_02;
@@ -300,8 +329,9 @@ struct Message22Slot01 {
 
 using Message22Response = message_variant<frame::Command::COMMAND_22,
                                         Message22Slot01, Message22Slot02,
-                                        Message22Slot03, Message22Slot0D,
-                                        Message22Slot0E, Message22Slot0F>;
+                                        Message22Slot03, Message22Slot05,
+                                        Message22Slot0D, Message22Slot0E,
+                                        Message22Slot0F>;
 static_assert(sizeof(Message22Response) == 9);
 
 }  // namespace esphome::waterdrop_serial::message

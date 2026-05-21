@@ -125,6 +125,7 @@ RAW_BYTE_SENSORS = (
     RawByteSensor("22_01_unknown4", "22 01 unknown 4"),
     RawByteSensor("22_01_unknown6", "22 01 unknown 6"),
     RawByteSensor("22_03_unknown6", "22 03 unknown 6"),
+    RawByteSensor("22_05_unknown4", "22 05 unknown 4"),
     RawByteSensor("22_0d_unknown2", "22 0D unknown 2"),
     RawByteSensor("22_0d_unknown4", "22 0D unknown 4"),
     RawByteSensor("22_0d_unknown6", "22 0D unknown 6"),
