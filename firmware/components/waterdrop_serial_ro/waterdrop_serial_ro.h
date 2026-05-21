@@ -37,14 +37,13 @@ namespace esphome::waterdrop_serial::ro {
 #ifdef USE_WATERDROP_SERIAL_RO_REQUEST_UNKNOWN_VALUES
 class DiagnosticNumber : public number::Number {
  public:
-  void set_initial_value(uint8_t value);
-  uint8_t value() const { return value_; }
+  void bind_value(uint8_t &value);
 
  protected:
   void control(float value) override;
 
  private:
-  uint8_t value_ = 0;
+  uint8_t *value_ = nullptr;
 };
 #else
 class DiagnosticSwitch : public switch_::Switch {
@@ -142,11 +141,11 @@ class WaterdropSerialRo : public WaterdropSerial {
   void publish_raw_byte_(RawByteSensor sensor, uint8_t value);
   void publish_unexpected_frame_(const frame::Frame &frame, const char *reason);
   filter::Filter &filter_(filter::Type filter);
+#ifdef USE_WATERDROP_SERIAL_RO_REQUEST_UNKNOWN_VALUES
+  uint8_t request_unknown_value_(RequestUnknownNumber number) const;
+#endif
 
   uint8_t request_slot_ = 0;
-#ifdef USE_WATERDROP_SERIAL_RO_REQUEST_UNKNOWN_VALUES
-  message::Message22Slot request_slot_pick_ = message::Message22Slot::SLOT_01;
-#endif
   std::array<filter::Filter, static_cast<size_t>(filter::Type::COUNT_)> filters_{};
   sensor::Sensor *tds_sensor_ = nullptr;
   sensor::Sensor *operating_lifetime_sensor_ = nullptr;
@@ -158,6 +157,16 @@ class WaterdropSerialRo : public WaterdropSerial {
 #ifdef USE_WATERDROP_SERIAL_RO_REQUEST_UNKNOWN_VALUES
   std::array<DiagnosticNumber *, REQUEST_UNKNOWN_NUMBER_TYPES_COUNT>
       request_unknown_numbers_{};
+  std::array<uint8_t, REQUEST_UNKNOWN_NUMBER_TYPES_COUNT> request_unknown_values_{
+      static_cast<uint8_t>(message::Message22Slot::SLOT_01),
+      0x00,
+      0x09,
+      static_cast<uint8_t>(message::Message22Request::FaucetState::CLOSED),
+      0x00,
+      0x00,
+      0x00,
+      0x00,
+  };
 #else
   DiagnosticSwitch *faucet_state_switch_ = nullptr;
 #endif

@@ -214,7 +214,6 @@ RAW_BYTE_CONFIG_SCHEMA = {
         icon=ICON_RAW_BYTE,
         accuracy_decimals=0,
         filters=[{"delta": 0}],
-        state_class=STATE_CLASS_MEASUREMENT,
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
     )
     for raw_byte in RAW_BYTE_SENSORS

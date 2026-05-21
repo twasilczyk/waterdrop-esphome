@@ -28,81 +28,18 @@ static constexpr float HOURS_PER_DAY = 24.0f;
 
 #ifdef USE_WATERDROP_SERIAL_RO_REQUEST_UNKNOWN_VALUES
 using RequestUnknownNumber = WaterdropSerialRo::RequestUnknownNumber;
-
-static uint8_t request_unknown_value(
-    const message::Message22Request &request,
-    message::Message22Slot request_slot_pick,
-    RequestUnknownNumber number) {
-  switch (number) {
-    case RequestUnknownNumber::SLOT_PICK:
-      return static_cast<uint8_t>(request_slot_pick);
-    case RequestUnknownNumber::UNKNOWN1:
-      return request.unknown1;
-    case RequestUnknownNumber::UNKNOWN2:
-      return request.unknown2;
-    case RequestUnknownNumber::FAUCET_STATE:
-      return static_cast<uint8_t>(request.faucetState);
-    case RequestUnknownNumber::UNKNOWN3:
-      return request.unknown3;
-    case RequestUnknownNumber::UNKNOWN4:
-      return request.unknown4;
-    case RequestUnknownNumber::UNKNOWN5:
-      return request.unknown5;
-    case RequestUnknownNumber::UNKNOWN6:
-      return request.unknown6;
-    case RequestUnknownNumber::COUNT_:
-      break;
-  }
-  assert(false);
-  return 0;
-}
-
-static void set_request_unknown_value(
-    message::Message22Request &request,
-    message::Message22Slot &request_slot_pick,
-    RequestUnknownNumber number,
-    uint8_t value) {
-  switch (number) {
-    case RequestUnknownNumber::SLOT_PICK:
-      request_slot_pick = static_cast<message::Message22Slot>(value);
-      break;
-    case RequestUnknownNumber::UNKNOWN1:
-      request.unknown1 = value;
-      break;
-    case RequestUnknownNumber::UNKNOWN2:
-      request.unknown2 = value;
-      break;
-    case RequestUnknownNumber::FAUCET_STATE:
-      request.faucetState = static_cast<message::Message22Request::FaucetState>(value);
-      break;
-    case RequestUnknownNumber::UNKNOWN3:
-      request.unknown3 = value;
-      break;
-    case RequestUnknownNumber::UNKNOWN4:
-      request.unknown4 = value;
-      break;
-    case RequestUnknownNumber::UNKNOWN5:
-      request.unknown5 = value;
-      break;
-    case RequestUnknownNumber::UNKNOWN6:
-      request.unknown6 = value;
-      break;
-    case RequestUnknownNumber::COUNT_:
-      assert(false);
-      break;
-  }
-}
 #endif
 
 #ifdef USE_WATERDROP_SERIAL_RO_REQUEST_UNKNOWN_VALUES
-void DiagnosticNumber::set_initial_value(uint8_t value) {
-  value_ = value;
-  publish_state(value_);
+void DiagnosticNumber::bind_value(uint8_t &value) {
+  value_ = &value;
+  publish_state(*value_);
 }
 
 void DiagnosticNumber::control(float value) {
-  value_ = static_cast<uint8_t>(std::clamp(value, 0.0f, 255.0f));
-  publish_state(value_);
+  assert(value_ != nullptr);
+  *value_ = static_cast<uint8_t>(std::clamp(value, 0.0f, 255.0f));
+  publish_state(*value_);
 }
 #else
 void DiagnosticSwitch::write_state(bool new_state) {
@@ -195,11 +132,8 @@ void WaterdropSerialRo::set_request_unknown_numbers(
   }));
   request_unknown_numbers_ = numbers;
 
-  const auto default_request = message::Message22Request{};
   for (size_t i = 0; i < request_unknown_numbers_.size(); i++) {
-    request_unknown_numbers_[i]->set_initial_value(
-        request_unknown_value(
-            default_request, request_slot_pick_, static_cast<RequestUnknownNumber>(i)));
+    request_unknown_numbers_[i]->bind_value(request_unknown_values_[i]);
   }
 }
 #else
@@ -450,6 +384,14 @@ filter::Filter &WaterdropSerialRo::filter_(filter::Type filter) {
   return filters_[index];
 }
 
+#ifdef USE_WATERDROP_SERIAL_RO_REQUEST_UNKNOWN_VALUES
+uint8_t WaterdropSerialRo::request_unknown_value_(RequestUnknownNumber number) const {
+  const auto index = static_cast<size_t>(number);
+  assert(index < request_unknown_values_.size());
+  return request_unknown_values_[index];
+}
+#endif
+
 void WaterdropSerialRo::send_request_message_() {
   static constexpr std::array<message::Message22Slot, 7> request_slots{
       message::Message22Slot::SLOT_0D, message::Message22Slot::SLOT_01, message::Message22Slot::SLOT_0E,
@@ -468,21 +410,23 @@ void WaterdropSerialRo::send_request_message_() {
 
   auto request = message::Message22Request{
     .slot = slot,
-#ifndef USE_WATERDROP_SERIAL_RO_REQUEST_UNKNOWN_VALUES
+#ifdef USE_WATERDROP_SERIAL_RO_REQUEST_UNKNOWN_VALUES
+    .unknown1 = request_unknown_value_(RequestUnknownNumber::UNKNOWN1),
+    .unknown2 = request_unknown_value_(RequestUnknownNumber::UNKNOWN2),
+    .faucetState = static_cast<message::Message22Request::FaucetState>(
+        request_unknown_value_(RequestUnknownNumber::FAUCET_STATE)),
+    .unknown3 = request_unknown_value_(RequestUnknownNumber::UNKNOWN3),
+    .unknown4 = request_unknown_value_(RequestUnknownNumber::UNKNOWN4),
+    .unknown5 = request_unknown_value_(RequestUnknownNumber::UNKNOWN5),
+    .unknown6 = request_unknown_value_(RequestUnknownNumber::UNKNOWN6),
+#else
     .faucetState = faucet_state,
 #endif
   };
 #ifdef USE_WATERDROP_SERIAL_RO_REQUEST_UNKNOWN_VALUES
-  for (size_t i = 0; i < request_unknown_numbers_.size(); i++) {
-    auto *number = request_unknown_numbers_[i];
-    if (number != nullptr) {
-      set_request_unknown_value(
-          request, request_slot_pick_, static_cast<RequestUnknownNumber>(i),
-          number->value());
-    }
-  }
   if (request.slot == message::Message22Slot::SLOT_01) {
-    request.slot = request_slot_pick_;
+    request.slot = static_cast<message::Message22Slot>(
+        request_unknown_value_(RequestUnknownNumber::SLOT_PICK));
   }
 
   // Print outgoing request for debugging.
