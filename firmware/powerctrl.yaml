@@ -1,3 +1,10 @@
+esphome:
+  on_boot:
+    - priority: 0
+      then:
+        - lambda: |-
+            id(serial_enabled).set_state(id(filter_power).state);
+
 switch:
   - platform: gpio
     name: "Filter power"
@@ -6,3 +13,6 @@ switch:
     inverted: true
     restore_mode: RESTORE_DEFAULT_OFF
     icon: "mdi:power"
+    on_state:
+      - lambda: |-
+          id(serial_enabled).set_state(x);

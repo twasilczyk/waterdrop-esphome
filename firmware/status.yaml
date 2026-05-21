@@ -18,6 +18,7 @@ light:
 esphome:
   on_boot:
     # Early boot: red
+    # TODO: these priorities are backwards
     - priority: 10
       then:
         - light.turn_on:
