@@ -1,10 +1,14 @@
 # waterdrop-esphome
 
+Smarten Waterdrop RO systems: a plug-in Wi-Fi add-on board to integrate with Home Assistant, read hidden diagnostic parameters, and (potentially) work around refrigerator line limitations.
+
+See the story: [Hacking a water filter through a 7-segment display](docs/story.md).
+
 ## Environment setup
 
-1. Set up esphome through [pip method](https://esphome.io/guides/installing_esphome/#pip)
+1. Set up ESPHome through the [pip method](https://esphome.io/guides/installing_esphome/#pip)
 2. `cd path/to/repo`
-2. `ln -s "$HOME/path/to/your/esphome-venv" .venv`
+3. `ln -s "$HOME/path/to/your/esphome-venv" .venv`
 
 ## Building
 
