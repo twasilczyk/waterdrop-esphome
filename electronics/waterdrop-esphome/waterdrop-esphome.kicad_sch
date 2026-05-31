@@ -6,8 +6,8 @@
 	(paper "USLetter")
 	(title_block
 		(title "waterdrop-esphome")
-		(date "2026-03-13")
-		(rev "0.0.1")
+		(date "2026-05-31")
+		(rev "0.2")
 		(company "Tomasz Wasilczyk")
 	)
 	(lib_symbols
@@ -3041,7 +3041,7 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "power:+12V"
+		(symbol "power:+24V"
 			(power)
 			(pin_numbers
 				(hide yes)
@@ -3062,7 +3062,7 @@
 					(hide yes)
 				)
 			)
-			(property "Value" "+12V"
+			(property "Value" "+24V"
 				(at 0 3.556 0)
 				(effects
 					(font
@@ -3088,7 +3088,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "Power symbol creates a global label with name \"+12V\""
+			(property "Description" "Power symbol creates a global label with name \"+24V\""
 				(at 0 0 0)
 				(effects
 					(font
@@ -3106,7 +3106,7 @@
 					(hide yes)
 				)
 			)
-			(symbol "+12V_0_1"
+			(symbol "+24V_0_1"
 				(polyline
 					(pts
 						(xy -0.762 1.27) (xy 0 2.54)
@@ -3144,7 +3144,7 @@
 					)
 				)
 			)
-			(symbol "+12V_1_1"
+			(symbol "+24V_1_1"
 				(pin power_in line
 					(at 0 0 90)
 					(length 0)
@@ -4820,7 +4820,7 @@
 		)
 		(uuid "16f8cc12-f209-4389-99a6-a7ca335a12ac")
 	)
-	(label "12V_IN"
+	(label "24V_IN"
 		(at 41.91 39.37 0)
 		(effects
 			(font
@@ -4850,7 +4850,7 @@
 		)
 		(uuid "42ebfc17-a119-4b9e-ad31-a264d29e357d")
 	)
-	(label "12V_control"
+	(label "24V_control"
 		(at 115.57 95.25 90)
 		(effects
 			(font
@@ -4930,7 +4930,7 @@
 		)
 		(uuid "fd0006c9-ce16-47b2-851f-546ef2ac757e")
 	)
-	(label "12V_OUT"
+	(label "24V_OUT"
 		(at 29.21 58.42 0)
 		(effects
 			(font
@@ -4949,6 +4949,72 @@
 			(justify right bottom)
 		)
 		(uuid "feadeb4e-01d3-450e-ad5b-83a3ba81781d")
+	)
+	(symbol
+		(lib_id "power:+24V")
+		(at 207.01 97.79 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "0039ce5a-8d4d-4ca7-93ac-babcc0791905")
+		(property "Reference" "#PWR010"
+			(at 207.01 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+24V"
+			(at 207.01 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 207.01 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 207.01 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+24V\""
+			(at 207.01 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "1dd67a49-0e13-4b04-82fd-a6d32301c7b9")
+		)
+		(instances
+			(project ""
+				(path "/35f74f22-9f08-4dab-aa3a-794dd2e7ee12"
+					(reference "#PWR010")
+					(unit 1)
+				)
+			)
+		)
 	)
 	(symbol
 		(lib_id "power:+3.3V")
@@ -5035,7 +5101,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "50k"
+		(property "Value" "51k"
 			(at 105.41 129.5399 0)
 			(effects
 				(font
@@ -5105,7 +5171,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "50k"
+		(property "Value" "51k"
 			(at 88.9 124.4599 0)
 			(effects
 				(font
@@ -5151,72 +5217,6 @@
 			(project ""
 				(path "/35f74f22-9f08-4dab-aa3a-794dd2e7ee12"
 					(reference "R7")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:+12V")
-		(at 95.25 36.83 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "046c96e7-315d-45a8-9ac1-7f0f54c3e973")
-		(property "Reference" "#PWR010"
-			(at 95.25 40.64 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+12V"
-			(at 95.25 31.75 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 95.25 36.83 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 95.25 36.83 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+12V\""
-			(at 95.25 36.83 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "5cbab508-7635-445e-a477-cb8a8ec69d14")
-		)
-		(instances
-			(project ""
-				(path "/35f74f22-9f08-4dab-aa3a-794dd2e7ee12"
-					(reference "#PWR010")
 					(unit 1)
 				)
 			)
@@ -5316,7 +5316,7 @@
 				)
 			)
 		)
-		(property "Value" "12V_IN"
+		(property "Value" "24V_IN"
 			(at 29.21 35.56 0)
 			(effects
 				(font
@@ -5590,7 +5590,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "100k"
+		(property "Value" "47k"
 			(at 118.11 58.4199 0)
 			(effects
 				(font
@@ -6097,72 +6097,6 @@
 			(project ""
 				(path "/35f74f22-9f08-4dab-aa3a-794dd2e7ee12"
 					(reference "R13")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:+12V")
-		(at 207.01 97.79 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "302216f1-bad8-4791-982f-fc76013cefcc")
-		(property "Reference" "#PWR026"
-			(at 207.01 101.6 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+12V"
-			(at 207.01 92.71 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 207.01 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 207.01 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+12V\""
-			(at 207.01 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "f5def0ec-4382-4a9f-8891-bb3dff8129aa")
-		)
-		(instances
-			(project ""
-				(path "/35f74f22-9f08-4dab-aa3a-794dd2e7ee12"
-					(reference "#PWR026")
 					(unit 1)
 				)
 			)
@@ -6881,6 +6815,72 @@
 		)
 	)
 	(symbol
+		(lib_id "power:+24V")
+		(at 95.25 36.83 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "6e98dc31-16e7-48ef-98b0-d19258c9da9c")
+		(property "Reference" "#PWR03"
+			(at 95.25 40.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+24V"
+			(at 95.25 31.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 95.25 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 95.25 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+24V\""
+			(at 95.25 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "38713be3-e1f8-42eb-a05f-ba39c9d1166a")
+		)
+		(instances
+			(project ""
+				(path "/35f74f22-9f08-4dab-aa3a-794dd2e7ee12"
+					(reference "#PWR03")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Mechanical:MountingHole")
 		(at 246.38 25.4 0)
 		(unit 1)
@@ -6908,7 +6908,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "MountingHole:MountingHole_4.3mm_M4"
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3"
 			(at 246.38 25.4 0)
 			(effects
 				(font
@@ -7321,7 +7321,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "50k"
+		(property "Value" "51k"
 			(at 190.5 119.3799 0)
 			(effects
 				(font
@@ -8306,7 +8306,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "MountingHole:MountingHole_4.3mm_M4"
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3"
 			(at 246.38 19.05 0)
 			(effects
 				(font
@@ -8416,10 +8416,9 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "d0828ed4-dee3-4280-a863-ae9a20350fc6")
 		(property "Reference" "K1"
-			(at 80.01 46.9899 0)
+			(at 80.01 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8427,8 +8426,8 @@
 				(justify right)
 			)
 		)
-		(property "Value" "G5LE-1"
-			(at 80.01 49.5299 0)
+		(property "Value" "G5LE-1-E DC24"
+			(at 76.2 54.61 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8861,7 +8860,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "12V_OUT"
+		(property "Value" "24V_OUT"
 			(at 31.75 65.0239 0)
 			(effects
 				(font
@@ -8931,7 +8930,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "12V_OUT_RELIEF"
+		(property "Value" "24V_OUT_RELIEF"
 			(at 46.99 64.7699 0)
 			(effects
 				(font
@@ -9216,9 +9215,9 @@
 				(justify left top)
 			)
 		)
-		(pin "SUPPLY_12V" input
+		(pin "SUPPLY_24V" input
 			(at 43.18 24.13 180)
-			(uuid "467cf8da-3221-4568-948b-a0c00e5e2dfe")
+			(uuid "dcad3a8b-a82d-4006-92bd-345421a1f76f")
 			(effects
 				(font
 					(size 1.27 1.27)
