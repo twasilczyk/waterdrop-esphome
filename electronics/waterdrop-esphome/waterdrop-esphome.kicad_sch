@@ -3652,16 +3652,6 @@
 		)
 		(uuid "2d2dc33a-233f-43bc-b192-60adfa419d55")
 	)
-	(text "TODO: verify if R8 (for RO) is necessary"
-		(exclude_from_sim no)
-		(at 89.408 151.892 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "95a19be2-c029-4992-86a8-c5edb4d0a1b3")
-	)
 	(junction
 		(at 95.25 57.15)
 		(diameter 0)
@@ -3703,12 +3693,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "4ca53a75-cb02-4519-84a7-c77cfaac4056")
-	)
-	(junction
-		(at 86.36 118.11)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "77458ad1-1949-44cb-afe4-8b100c357fc8")
 	)
 	(junction
 		(at 208.28 119.38)
@@ -3829,16 +3813,6 @@
 	(no_connect
 		(at 154.94 113.03)
 		(uuid "f2e89101-2c5a-46b1-95c6-c59fcb2497a5")
-	)
-	(wire
-		(pts
-			(xy 86.36 116.84) (xy 86.36 118.11)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "02d3f6c4-470c-4219-8693-22613a27fcef")
 	)
 	(wire
 		(pts
@@ -6306,72 +6280,6 @@
 	)
 	(symbol
 		(lib_id "power:+5V")
-		(at 86.36 109.22 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "3a86c05e-88ed-4c10-b502-ccebf4b4195f")
-		(property "Reference" "#PWR022"
-			(at 86.36 113.03 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+5V"
-			(at 86.36 104.14 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 86.36 109.22 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 86.36 109.22 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+5V\""
-			(at 86.36 109.22 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "462f17a5-a68a-4f88-8a69-5db8d5ccc5e8")
-		)
-		(instances
-			(project ""
-				(path "/35f74f22-9f08-4dab-aa3a-794dd2e7ee12"
-					(reference "#PWR022")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:+5V")
 		(at 54.61 128.27 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -7007,76 +6915,6 @@
 			(project ""
 				(path "/35f74f22-9f08-4dab-aa3a-794dd2e7ee12"
 					(reference "R3")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 86.36 113.03 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "7717506f-5b10-427b-bf99-eda6b290da25")
-		(property "Reference" "R8"
-			(at 88.9 111.7599 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "10k"
-			(at 88.9 114.2999 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder"
-			(at 84.582 113.03 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 86.36 113.03 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Resistor"
-			(at 86.36 113.03 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "bb11a0d7-d738-45d6-bfa6-6192508a37f7")
-		)
-		(pin "2"
-			(uuid "ac8ca69e-6edb-4dfc-8100-795aa635e326")
-		)
-		(instances
-			(project ""
-				(path "/35f74f22-9f08-4dab-aa3a-794dd2e7ee12"
-					(reference "R8")
 					(unit 1)
 				)
 			)
