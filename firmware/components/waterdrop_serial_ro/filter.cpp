@@ -53,17 +53,14 @@ void Filter::publish_remaining_() {
   const auto total_life = *total_life_;
   assert(total_life > 0);
   const auto used_life = *used_life_;
-  if (used_life > total_life) {
-    ESP_LOGW(TAG, "Used life (%u) is greater than total life (%u)", used_life, total_life);
-    return;
-  }
-  const uint16_t remaining_life = total_life - used_life;
+  const auto remaining_life = static_cast<int32_t>(total_life) - static_cast<int32_t>(used_life);
+  const float remaining_life_percent = std::max(0.0f, remaining_life * 100.0f / total_life);
 
   if (sensors_.remaining_life != nullptr) {
     sensors_.remaining_life->publish_state(remaining_life);
   }
   if (sensors_.remaining_percent != nullptr) {
-    sensors_.remaining_percent->publish_state(remaining_life * 100.0f / total_life);
+    sensors_.remaining_percent->publish_state(remaining_life_percent);
   }
   if (sensors_.health != nullptr) {
     sensors_.health->publish_state(remaining_life <= FILTER_REPLACE_SOON);
