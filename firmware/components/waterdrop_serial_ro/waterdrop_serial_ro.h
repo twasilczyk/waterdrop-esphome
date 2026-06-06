@@ -9,6 +9,7 @@
 #include "esphome/components/switch/switch.h"
 #endif
 #pragma GCC diagnostic pop
+#include "esphome/core/component.h"
 #include "esphome/components/waterdrop_serial/frame.h"
 #ifdef USE_WATERDROP_SERIAL_RO_REQUEST_UNKNOWN_VALUES
 #include "esphome/components/waterdrop_serial/message.h"
@@ -48,7 +49,10 @@ class DiagnosticNumber : public number::Number {
   uint8_t *value_ = nullptr;
 };
 #else
-class DiagnosticSwitch : public switch_::Switch {
+class DiagnosticSwitch : public switch_::Switch, public Component {
+ public:
+  void setup() override;
+
  protected:
   void write_state(bool new_state) override;
 };

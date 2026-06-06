@@ -38,7 +38,9 @@ waterdrop_serial_ro_ns = waterdrop_serial.waterdrop_serial_ns.namespace("ro")
 WaterdropSerialRo = waterdrop_serial_ro_ns.class_(
     "WaterdropSerialRo", waterdrop_serial.WaterdropSerial
 )
-DiagnosticSwitch = waterdrop_serial_ro_ns.class_("DiagnosticSwitch", switch.Switch)
+DiagnosticSwitch = waterdrop_serial_ro_ns.class_(
+    "DiagnosticSwitch", switch.Switch, cg.Component
+)
 DiagnosticNumber = waterdrop_serial_ro_ns.class_("DiagnosticNumber", number.Number)
 waterdrop_serial_ro_filter_ns = waterdrop_serial_ro_ns.namespace("filter")
 FilterType = waterdrop_serial_ro_filter_ns.enum("Type", is_class=True)
@@ -282,6 +284,7 @@ ENTITIES_SCHEMA = cv.Schema(
             CONF_FAUCET_OPEN, default={CONF_NAME: "Faucet open"}
         ): switch.switch_schema(
             DiagnosticSwitch,
+            default_restore_mode="RESTORE_DEFAULT_OFF",
             icon=ICON_FAUCET,
             entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
             block_inverted=True,
@@ -365,4 +368,5 @@ async def to_code(config):
 
     if not config[CONF_REQUEST_UNKNOWN_VALUES]:
         faucet_state_switch = await switch.new_switch(entities_config[CONF_FAUCET_OPEN])
+        await cg.register_component(faucet_state_switch, entities_config[CONF_FAUCET_OPEN])
         cg.add(var.set_faucet_state_switch(faucet_state_switch))

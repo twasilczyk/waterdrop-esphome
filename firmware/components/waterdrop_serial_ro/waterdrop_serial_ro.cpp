@@ -46,6 +46,12 @@ void DiagnosticNumber::control(float value) {
   publish_state(*value_);
 }
 #else
+void DiagnosticSwitch::setup() {
+  if (auto initial = this->get_initial_state_with_restore_mode(); initial.has_value()) {
+    publish_state(*initial);
+  }
+}
+
 void DiagnosticSwitch::write_state(bool new_state) {
   publish_state(new_state);
 }
