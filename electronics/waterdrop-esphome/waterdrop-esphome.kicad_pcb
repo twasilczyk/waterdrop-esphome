@@ -9,8 +9,8 @@
 	(paper "USLetter")
 	(title_block
 		(title "waterdrop-esphome")
-		(date "2026-01-12")
-		(rev "0.0.1")
+		(date "2026-06-06")
+		(rev "0.2")
 		(company "Tomasz Wasilczyk")
 	)
 	(layers
@@ -14526,7 +14526,7 @@
 		(layer "Edge.Cuts")
 		(uuid "8b07603d-c530-4e91-b57a-53a78b07b51b")
 	)
-	(gr_text "waterdrop-esphome v0.1"
+	(gr_text "waterdrop-esphome v0.2"
 		(at 137.795 114.3 90)
 		(layer "F.Cu")
 		(uuid "5160c5f0-95d7-44db-9639-9889d6221252")
