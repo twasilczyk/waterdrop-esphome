@@ -3,4 +3,5 @@
   (lib (name "Inductor_THT_updated")(type "KiCad")(uri "${KIPRJMOD}/../libs/Inductor_THT_updated.pretty")(options "")(descr ""))
   (lib (name "RF_Module_extra")(type "KiCad")(uri "${KIPRJMOD}/../libs/RF_Module_extra.pretty")(options "")(descr ""))
   (lib (name "MountingHole_extra")(type "KiCad")(uri "${KIPRJMOD}/../libs/MountingHole_extra.pretty")(options "")(descr ""))
+  (lib (name "Diode_SMD_extra")(type "KiCad")(uri "${KIPRJMOD}/../libs/Diode_SMD_extra.pretty")(options "")(descr ""))
 )
