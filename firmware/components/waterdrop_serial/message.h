@@ -50,11 +50,21 @@ struct message_variant : packed_variant<Alternatives...> {
  *    to happen right before the 5-minute activity. Then, it triggers pump for 1 minute.
  */
 
-/* A couple values are oscillating together 14 +/- 1:
- * - Message22Slot03::unknown6
- * - MessageC5Slot03::unknown2
- * - MessageC5Slot05::unknown3
- * - MessageC5Slot05::unknown4
+/* Partially reverse engineered magic values.
+ *
+ * MagicCounter1:
+ *  - Present in messages 22:0D, 22:01, C5:01 and C5:03
+ *  - In C5:03 (and maybe others) it started rising from 40 to 90 (by 10 every 6:21~6:23) after
+ *    turning off input valve.
+ *
+ * MagicSensor1:
+ *  - Present in message C5:02:unknown4
+ *  - Analog range 4-46, but also observed 53 in winter
+ *  - Fairly stable.
+ *
+ * Air temperature:
+ *  - Present in messages C5:03, C5:05, 22:03
+ *  - Looks the same, but then why is it twice in C5:05?
  */
 
 struct MessageC2 {
@@ -109,7 +119,7 @@ struct MessageC5Slot01 {
   uint8_t unknown4 = 0x00;
   uint8_t unknown5 = 0x00;
   uint8_t unknown6 = 0x00;
-  uint8_t unknown7 = 0x0A;  // 00 (rare), 0A, 28
+  uint8_t unknown7 = 0x0A;  // MagicCounter1
 };
 
 struct MessageC5Slot02 {
@@ -118,7 +128,7 @@ struct MessageC5Slot02 {
   uint8_t unknown1 = 0x00;
   uint8_t unknown2 = 0x00;
   uint8_t unknown3 = 0x00;
-  uint8_t unknown4 = 0x35;  // 4-36 analog range, but also observed 53 in winter
+  uint8_t unknown4 = 0x35;  // MagicSensor1
   uint8_t unknown5 = 0x08;
   uint8_t unknown6 = 0x34;
   uint8_t unknown7 = 0x00;  // 00, 01
@@ -128,10 +138,7 @@ struct MessageC5Slot03 {
   static constexpr MessageC5Slot TAG = MessageC5Slot::SLOT_03;
 
   uint8_t unknown1 = 0x00;
-
-  // 12-15 maybe analog value, but seen 25 once.
-  // Very stable, but heavily oscillating when between values.
-  uint8_t unknown2 = 0x0E;
+  uint8_t air_temperature = 20;
 
   // Total time RO unit was powered on.
   endian::big_uint16_t operating_lifetime_hours = 48;
@@ -139,11 +146,7 @@ struct MessageC5Slot03 {
   static constexpr float OPERATING_LIFETIME_ERROR = 1440.0f / 1445.0f;
 
   uint8_t unknown5 = 0x00;
-
-  // Started rising from 40 to 90 (by 10 every 6:21~6:23) after turning off input valve.
-  // Also seen 10 when new.
-  uint8_t unknown6 = 0x0A;
-
+  uint8_t unknown6 = 0x0A;  // MagicCounter1
   uint8_t unknown7 = 0x00;
 };
 
@@ -172,8 +175,8 @@ struct MessageC5Slot05 {
 
   uint8_t unknown1 = 0x00;
   uint8_t unknown2 = 0x00;
-  uint8_t unknown3 = 0x0E;  // Correlated with MessageC5Slot03::unknown2
-  uint8_t unknown4 = 0x0E;  // Correlated with MessageC5Slot03::unknown2
+  uint8_t air_temperature_1 = 20;
+  uint8_t air_temperature_2 = 20;
   uint8_t unknown5 = 0x00;
   uint8_t unknown6 = 0x00;
   uint8_t unknown7 = 0x00;  // 0 when idle, 1 roughly on E03 (turned 1->0 27s after E03 cleared).
@@ -269,7 +272,7 @@ struct Message22Slot03 {
   uint8_t unknown4 = 0x00;
   endian::big_uint16_t tds = 0;
   uint8_t unknown5 = 0x00;
-  uint8_t unknown6 = 0x0C;  // Same as MessageC5Slot03::unknown2
+  uint8_t air_temperature = 20;
 };
 
 struct Message22Slot05 {
@@ -304,11 +307,11 @@ struct Message22Slot0D {
   static constexpr Message22Slot TAG = Message22Slot::SLOT_0D;
 
   uint8_t unknown1 = 0x00;
-  uint8_t unknown2 = 0x0A;  // 00 (rare), 0A, 28
+  uint8_t unknown2 = 0x0A;  // MagicCounter1
   uint8_t unknown3 = 0x00;
-  uint8_t unknown4 = 0x0A;  // 00 (rare), 0A, 28
+  uint8_t unknown4 = 0x0A;  // MagicCounter1
   uint8_t unknown5 = 0x00;
-  uint8_t unknown6 = 0x0A;  // 00 (rare), 0A, 28
+  uint8_t unknown6 = 0x0A;  // MagicCounter1
   uint8_t unknown7 = 0x00;
   uint8_t unknown8 = 0x00;
 };
@@ -318,11 +321,11 @@ struct Message22Slot01 {
   static constexpr Message22Slot TAG = Message22Slot::SLOT_01;
 
   uint8_t unknown1 = 0x00;
-  uint8_t unknown2 = 0x0A;  // 00 (rare), 0A, 28
+  uint8_t unknown2 = 0x0A;  // MagicCounter1
   uint8_t unknown3 = 0x00;
-  uint8_t unknown4 = 0x0A;  // 00 (rare), 0A, 28
+  uint8_t unknown4 = 0x0A;  // MagicCounter1
   uint8_t unknown5 = 0x00;
-  uint8_t unknown6 = 0x0A;  // 00 (rare), 0A, 28
+  uint8_t unknown6 = 0x0A;  // MagicCounter1
   uint8_t unknown7 = 0x00;
   uint8_t unknown8 = 0x00;
 };

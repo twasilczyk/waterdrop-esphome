@@ -88,18 +88,14 @@ class WaterdropSerialRo : public WaterdropSerial {
     C5_SLOT_01_UNKNOWN7,
     C5_SLOT_02_UNKNOWN4,
     C5_SLOT_02_UNKNOWN7,
-    C5_SLOT_03_UNKNOWN2,
     C5_SLOT_03_UNKNOWN6,
     C5_SLOT_04_UNKNOWN1,
     C5_SLOT_04_UNKNOWN2,
     C5_SLOT_04_UNKNOWN6,
     C5_SLOT_04_UNKNOWN7,
-    C5_SLOT_05_UNKNOWN3,
-    C5_SLOT_05_UNKNOWN4,
     SLOT_22_01_UNKNOWN2,
     SLOT_22_01_UNKNOWN4,
     SLOT_22_01_UNKNOWN6,
-    SLOT_22_03_UNKNOWN6,
     SLOT_22_05_UNKNOWN4,
     SLOT_22_0D_UNKNOWN2,
     SLOT_22_0D_UNKNOWN4,
@@ -123,6 +119,7 @@ class WaterdropSerialRo : public WaterdropSerial {
 
   void set_filter_sensors(filter::Type filter, filter::Sensors sensors);
   void set_tds_sensor(sensor::Sensor *sensor);
+  void set_air_temperature_sensor(sensor::Sensor *sensor);
   void set_operating_lifetime_sensor(sensor::Sensor *sensor);
   void set_pump_active_sensor(binary_sensor::BinarySensor *sensor);
   void set_flushing_sensor(binary_sensor::BinarySensor *sensor);
@@ -160,6 +157,7 @@ class WaterdropSerialRo : public WaterdropSerial {
   uint8_t request_slot_ = 0;
   std::array<filter::Filter, static_cast<size_t>(filter::Type::COUNT_)> filters_{};
   sensor::Sensor *tds_sensor_ = nullptr;
+  sensor::Sensor *air_temperature_sensor_ = nullptr;
   sensor::Sensor *operating_lifetime_sensor_ = nullptr;
   binary_sensor::BinarySensor *pump_active_sensor_ = nullptr;
   binary_sensor::BinarySensor *flushing_sensor_ = nullptr;

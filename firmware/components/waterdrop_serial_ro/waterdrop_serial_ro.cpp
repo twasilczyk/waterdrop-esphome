@@ -103,6 +103,10 @@ void WaterdropSerialRo::set_tds_sensor(sensor::Sensor *sensor) {
   tds_sensor_ = sensor;
 }
 
+void WaterdropSerialRo::set_air_temperature_sensor(sensor::Sensor *sensor) {
+  air_temperature_sensor_ = sensor;
+}
+
 void WaterdropSerialRo::set_operating_lifetime_sensor(sensor::Sensor *sensor) {
   operating_lifetime_sensor_ = sensor;
 }
@@ -243,7 +247,6 @@ void WaterdropSerialRo::handle_c5_message_(const frame::Frame &frame) {
           slot.unknown7 != expected.unknown7) {
         publish_unexpected_frame_(frame, "Unexpected C5 slot 03");
       }
-      publish_raw_byte_(RawByteSensor::C5_SLOT_03_UNKNOWN2, slot.unknown2);
       publish_raw_byte_(RawByteSensor::C5_SLOT_03_UNKNOWN6, slot.unknown6);
 #endif
       break;
@@ -272,8 +275,6 @@ void WaterdropSerialRo::handle_c5_message_(const frame::Frame &frame) {
           slot.unknown7 != expected.unknown7) {
         publish_unexpected_frame_(frame, "Unexpected C5 slot 05");
       }
-      publish_raw_byte_(RawByteSensor::C5_SLOT_05_UNKNOWN3, slot.unknown3);
-      publish_raw_byte_(RawByteSensor::C5_SLOT_05_UNKNOWN4, slot.unknown4);
 #endif
       break;
     }
@@ -345,9 +346,9 @@ void WaterdropSerialRo::handle_response_message_(const frame::Frame &frame) {
       if (tds_sensor_ != nullptr) {
         tds_sensor_->publish_state(slot.tds);
       }
-#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
-      publish_raw_byte_(RawByteSensor::SLOT_22_03_UNKNOWN6, slot.unknown6);
-#endif
+      if (air_temperature_sensor_ != nullptr) {
+        air_temperature_sensor_->publish_state(slot.air_temperature);
+      }
       break;
     }
     case message::Message22Slot::SLOT_05: {

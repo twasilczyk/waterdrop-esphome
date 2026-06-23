@@ -15,9 +15,11 @@ from esphome.const import (
     DEVICE_CLASS_DURATION,
     DEVICE_CLASS_PROBLEM,
     DEVICE_CLASS_RUNNING,
+    DEVICE_CLASS_TEMPERATURE,
     ENTITY_CATEGORY_DIAGNOSTIC,
     STATE_CLASS_MEASUREMENT,
     STATE_CLASS_TOTAL_INCREASING,
+    UNIT_CELSIUS,
     UNIT_PARTS_PER_MILLION,
     UNIT_PERCENT,
 )
@@ -47,6 +49,7 @@ FilterType = waterdrop_serial_ro_filter_ns.enum("Type", is_class=True)
 FilterSensors = waterdrop_serial_ro_filter_ns.struct("Sensors")
 
 CONF_ENTITIES = "entities"
+CONF_AIR_TEMPERATURE = "air_temperature"
 CONF_FAUCET_OPEN = "faucet_open"
 CONF_FLUSHING = "flushing"
 CONF_HEALTH = "health"
@@ -115,18 +118,14 @@ RAW_BYTE_SENSORS = (
     RawByteSensor("c5_01_unknown7", "C5 01 unknown 7"),
     RawByteSensor("c5_02_unknown4", "C5 02 unknown 4"),
     RawByteSensor("c5_02_unknown7", "C5 02 unknown 7"),
-    RawByteSensor("c5_03_unknown2", "C5 03 unknown 2"),
     RawByteSensor("c5_03_unknown6", "C5 03 unknown 6"),
     RawByteSensor("c5_04_unknown1", "C5 04 unknown 1"),
     RawByteSensor("c5_04_unknown2", "C5 04 unknown 2"),
     RawByteSensor("c5_04_unknown6", "C5 04 unknown 6"),
     RawByteSensor("c5_04_unknown7", "C5 04 unknown 7"),
-    RawByteSensor("c5_05_unknown3", "C5 05 unknown 3"),
-    RawByteSensor("c5_05_unknown4", "C5 05 unknown 4"),
     RawByteSensor("22_01_unknown2", "22 01 unknown 2"),
     RawByteSensor("22_01_unknown4", "22 01 unknown 4"),
     RawByteSensor("22_01_unknown6", "22 01 unknown 6"),
-    RawByteSensor("22_03_unknown6", "22 03 unknown 6"),
     RawByteSensor("22_05_unknown4", "22 05 unknown 4"),
     RawByteSensor("22_0d_unknown2", "22 0D unknown 2"),
     RawByteSensor("22_0d_unknown4", "22 0D unknown 4"),
@@ -249,6 +248,16 @@ ENTITIES_SCHEMA = cv.Schema(
             state_class=STATE_CLASS_MEASUREMENT,
         ),
         cv.Optional(
+            CONF_AIR_TEMPERATURE,
+            default={CONF_NAME: "Air temperature"},
+        ): sensor.sensor_schema(
+            unit_of_measurement=UNIT_CELSIUS,
+            accuracy_decimals=0,
+            filters=[{"delta": 0}],
+            device_class=DEVICE_CLASS_TEMPERATURE,
+            state_class=STATE_CLASS_MEASUREMENT,
+        ),
+        cv.Optional(
             CONF_OPERATING_LIFETIME,
             default={CONF_NAME: "Operating lifetime"},
         ): sensor.sensor_schema(
@@ -323,6 +332,11 @@ async def to_code(config):
         )
 
     cg.add(var.set_tds_sensor(await sensor.new_sensor(entities_config[CONF_TDS])))
+    cg.add(
+        var.set_air_temperature_sensor(
+            await sensor.new_sensor(entities_config[CONF_AIR_TEMPERATURE])
+        )
+    )
     cg.add(
         var.set_operating_lifetime_sensor(
             await sensor.new_sensor(entities_config[CONF_OPERATING_LIFETIME])
