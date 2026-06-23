@@ -1,39 +1,7 @@
-esphome:
-  name: waterdrop-esphome
-  friendly_name: Waterdrop RO system
-  project:
-    name: Tomasz Wasilczyk.waterdrop-esphome
-    version: "0.2"
-
-esp32:
-  board: esp32-s3-devkitc1-n4r2 # Waveshare ESP32-S3-Tiny
-  framework:
-    type: esp-idf
+packages:
+  base: !include base.yaml
 
 external_components:
   - source:
       type: local
       path: components
-
-packages:
-  powerctrl: !include powerctrl.yaml
-  serial: !include serial.yaml
-  status: !include status.yaml
-  valve: !include valve.yaml
-
-api:
-  encryption:
-    key: !secret common_api_encryption_key
-
-ota:
-  - platform: esphome
-    password: !secret ota_password
-
-logger:
-  logs:
-    script: WARN
-    text_sensor: WARN
-
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password

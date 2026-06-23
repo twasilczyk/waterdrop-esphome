@@ -1,0 +1,16 @@
+packages:
+  base: !include base.yaml
+
+external_components:
+  - source:
+      type: git
+      url: https://github.com/twasilczyk/waterdrop-esphome
+      ref: main
+      path: firmware/components
+      username: !secret github_username
+      password: !secret github_token
+    components:
+      - cxxflags
+      - waterdrop_serial
+      - waterdrop_serial_faucet
+      - waterdrop_serial_ro

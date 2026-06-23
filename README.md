@@ -14,8 +14,9 @@ See the story: [Hacking a water filter through a 7-segment display](docs/story.m
   - Individual filter state: total and remaining life plus derivative sensors (life percentage, filter health warning)
   - Pump state (idle, active, flushing)
   - Error codes
+  - Ambient air temperature
   - Operating lifetime
-  - Potentially more: ~17 16-bit fields are still not reverse-engineered
+  - Potentially more: ~14 16-bit fields are still not reverse-engineered
 - Simulates faucet handle position (see [Refrigerator line workaround](#refrigerator-line-workaround))
 - Switchable power supply to the main RO unit
 - Emergency water shutoff with external latching solenoid valve
@@ -26,17 +27,52 @@ Waterdrop RO water filter systems don't play particularly well with refrigerator
 
 The simulated faucet handle feature works around this issue. If the RO unit performs this flush attempt while the faucet is reported open, it will start a proper flush cycle and switch back to the regular 12-hour flushing interval.
 
-## Firmware
+## Installing firmware
 
-### Environment setup
+### ESPHome Builder
+
+Best for long-term maintenance.
+
+1. Define the following secrets (ESPHome Device Builder 🡒 three-dot menu 🡒 Secrets):
+   - common_api_encryption_key
+   - ota_password
+   - wifi_ssid
+   - wifi_password
+2. Create device 🡒 Advanced set up options 🡒 Empty Configuration; paste the following:
+   ```
+   packages:
+     waterdrop-esphome:
+       url: https://github.com/twasilczyk/waterdrop-esphome
+       ref: main
+       username: !secret github_username
+       password: !secret github_token
+       files:
+         - firmware/builder-package.yaml
+   ```
+3. Install over USB at first, then you can switch to OTA
+
+### Local environment
+
+Best for development (from terminal or VSCode).
 
 1. Set up ESPHome through the [pip method](https://esphome.io/guides/installing_esphome/#pip)
 2. `cd path/to/repo`
 3. `ln -s "$HOME/path/to/your/esphome-venv" .venv`
+4. Create `secrets.yaml` one directory up from your repo root:
+   ```
+   wifi_ssid: "YourWiFi"
+   wifi_password: "..."
+   ota_password: "..."
+   common_api_encryption_key: "..."
+   ```
 
-### Building and flashing
+Then, you can build from terminal:
+```
+cd firmware
+esphome run waterdrop-esphome.yaml
+```
 
-With VSCode:
+Or from VSCode:
 1. Ctrl+Shift+P
 2. `Tasks: Run Task`
 3. `ESPHome: Run without debugging`
