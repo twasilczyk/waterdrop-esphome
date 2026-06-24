@@ -16,6 +16,7 @@ from esphome.const import (
     DEVICE_CLASS_PROBLEM,
     DEVICE_CLASS_RUNNING,
     DEVICE_CLASS_TEMPERATURE,
+    ENTITY_CATEGORY_CONFIG,
     ENTITY_CATEGORY_DIAGNOSTIC,
     STATE_CLASS_MEASUREMENT,
     STATE_CLASS_TOTAL_INCREASING,
@@ -40,8 +41,8 @@ waterdrop_serial_ro_ns = waterdrop_serial.waterdrop_serial_ns.namespace("ro")
 WaterdropSerialRo = waterdrop_serial_ro_ns.class_(
     "WaterdropSerialRo", waterdrop_serial.WaterdropSerial
 )
-DiagnosticSwitch = waterdrop_serial_ro_ns.class_(
-    "DiagnosticSwitch", switch.Switch, cg.Component
+ConfigSwitch = waterdrop_serial_ro_ns.class_(
+    "ConfigSwitch", switch.Switch, cg.Component
 )
 DiagnosticNumber = waterdrop_serial_ro_ns.class_("DiagnosticNumber", number.Number)
 waterdrop_serial_ro_filter_ns = waterdrop_serial_ro_ns.namespace("filter")
@@ -290,12 +291,12 @@ ENTITIES_SCHEMA = cv.Schema(
             entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ),
         cv.Optional(
-            CONF_FAUCET_OPEN, default={CONF_NAME: "Faucet open"}
+            CONF_FAUCET_OPEN, default={CONF_NAME: "Simulate open faucet"}
         ): switch.switch_schema(
-            DiagnosticSwitch,
+            ConfigSwitch,
             default_restore_mode="RESTORE_DEFAULT_OFF",
             icon=ICON_FAUCET,
-            entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+            entity_category=ENTITY_CATEGORY_CONFIG,
             block_inverted=True,
         ),
     }

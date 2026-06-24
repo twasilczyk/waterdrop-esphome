@@ -49,7 +49,7 @@ class DiagnosticNumber : public number::Number {
   uint8_t *value_ = nullptr;
 };
 #else
-class DiagnosticSwitch : public switch_::Switch, public Component {
+class ConfigSwitch : public switch_::Switch, public Component {
  public:
   void setup() override;
 
@@ -134,7 +134,7 @@ class WaterdropSerialRo : public WaterdropSerial {
   void set_request_unknown_numbers(
       std::array<DiagnosticNumber *, REQUEST_UNKNOWN_NUMBER_TYPES_COUNT> numbers);
 #else
-  void set_faucet_state_switch(DiagnosticSwitch *faucet_state_switch);
+  void set_faucet_state_switch(ConfigSwitch *faucet_state_switch);
 #endif
 
  protected:
@@ -180,7 +180,7 @@ class WaterdropSerialRo : public WaterdropSerial {
       0x00,
   };
 #else
-  DiagnosticSwitch *faucet_state_switch_ = nullptr;
+  ConfigSwitch *faucet_state_switch_ = nullptr;
 #endif
 };
 

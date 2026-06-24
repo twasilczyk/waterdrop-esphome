@@ -46,13 +46,13 @@ void DiagnosticNumber::control(float value) {
   publish_state(*value_);
 }
 #else
-void DiagnosticSwitch::setup() {
+void ConfigSwitch::setup() {
   if (auto initial = this->get_initial_state_with_restore_mode(); initial.has_value()) {
     publish_state(*initial);
   }
 }
 
-void DiagnosticSwitch::write_state(bool new_state) {
+void ConfigSwitch::write_state(bool new_state) {
   publish_state(new_state);
 }
 #endif
@@ -155,7 +155,7 @@ void WaterdropSerialRo::set_request_unknown_numbers(
   }
 }
 #else
-void WaterdropSerialRo::set_faucet_state_switch(DiagnosticSwitch *faucet_state_switch) {
+void WaterdropSerialRo::set_faucet_state_switch(ConfigSwitch *faucet_state_switch) {
   assert(faucet_state_switch != nullptr);
   faucet_state_switch_ = faucet_state_switch;
 }
