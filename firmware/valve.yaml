@@ -32,10 +32,12 @@ valve:
 
 script:
   - id: valve_pulse
-    mode: single
+    mode: restart
     parameters:
       open: bool
     then:
+      - switch.turn_off: valve_in1
+      - switch.turn_off: valve_in2
       - if:
           condition:
             lambda: 'return open;'
