@@ -1,6 +1,5 @@
 substitutions:
   status_led_brightness: 20%
-  status_led_delay_ms: 10
 
 light:
   - platform: esp32_rmt_led_strip
@@ -15,36 +14,39 @@ light:
     restore_mode: ALWAYS_OFF
     icon: "mdi:led-variant-on"
 
+script:
+  - id: update_status_led
+    mode: restart
+    parameters:
+      boot_stage: int
+    then:
+      - light.turn_on:
+          id: status_led
+          brightness: ${status_led_brightness}
+          red: !lambda 'return boot_stage == 3 ? 0.0f : 1.0f;'
+          green: !lambda 'return boot_stage == 1 ? 0.0f : (boot_stage == 2 ? 0.6f : 1.0f);'
+          blue: 0%
+
 esphome:
   on_boot:
-    # Early boot: red
-    # TODO: these priorities are backwards
-    - priority: 10
+    - priority: 798 # HARDWARE - 2
       then:
-        - light.turn_on:
-            id: status_led
-            brightness: ${status_led_brightness}
-            red: 100%
-            green: 0%
-            blue: 0%
-    # Hardware ready: orange
-    - priority: 1000
-      then:
-        - delay: ${status_led_delay_ms}ms
-        - light.turn_on:
-            id: status_led
-            brightness: ${status_led_brightness}
-            red: 100%
-            green: 60%
-            blue: 0%
+        - script.execute:
+            id: update_status_led
+            boot_stage: 1
 
-# Wi-Fi connected: green
+    - priority: -10000 # LATE * 100
+      then:
+        - script.execute:
+            id: update_status_led
+            boot_stage: 2
+
 wifi:
   on_connect:
-    - delay: ${status_led_delay_ms * 2}ms
-    - light.turn_on:
-        id: status_led
-        red: 0%
-        green: 100%
-        blue: 0%
-        brightness: ${status_led_brightness}
+    - script.execute:
+        id: update_status_led
+        boot_stage: 3
+  on_disconnect:
+    - script.execute:
+        id: update_status_led
+        boot_stage: 2
