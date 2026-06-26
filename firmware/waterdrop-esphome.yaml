@@ -1,3 +1,7 @@
+substitutions:
+  waterdrop_report_unknown_values: true
+  waterdrop_request_unknown_values: false
+
 packages:
   base: !include base.yaml
 

@@ -21,8 +21,8 @@ uart:
 waterdrop_serial_ro:
   id: waterdrop_ro
   uart_id: uart_ro
-  report_unknown_values: true
-  request_unknown_values: false
+  report_unknown_values: ${waterdrop_report_unknown_values}
+  request_unknown_values: ${waterdrop_request_unknown_values}
 
 waterdrop_serial_faucet:
   id: waterdrop_faucet
