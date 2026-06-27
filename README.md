@@ -42,12 +42,13 @@ Best for long-term maintenance.
    - wifi_password
 2. Create device 🡒 Advanced set up options 🡒 Empty Configuration; paste the following:
    ```
+   substitutions:
+     branch: stable
+
    packages:
      waterdrop-esphome:
        url: https://github.com/twasilczyk/waterdrop-esphome
-       ref: main
-       username: !secret github_username
-       password: !secret github_token
+       ref: ${branch}
        files:
          - firmware/builder-package.yaml
    ```

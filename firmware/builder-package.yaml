@@ -9,10 +9,8 @@ external_components:
   - source:
       type: git
       url: https://github.com/twasilczyk/waterdrop-esphome
-      ref: main
+      ref: ${branch}
       path: firmware/components
-      username: !secret github_username
-      password: !secret github_token
     components:
       - cxxflags
       - waterdrop_serial

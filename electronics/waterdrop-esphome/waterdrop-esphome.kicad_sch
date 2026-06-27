@@ -6,8 +6,8 @@
 	(paper "USLetter")
 	(title_block
 		(title "waterdrop-esphome")
-		(date "2026-05-31")
-		(rev "0.2")
+		(date "2026-06-27")
+		(rev "1.0")
 		(company "Tomasz Wasilczyk")
 	)
 	(lib_symbols

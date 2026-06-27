@@ -3,7 +3,7 @@ esphome:
   friendly_name: Waterdrop RO system
   project:
     name: Tomasz Wasilczyk.waterdrop-esphome
-    version: "0.2"
+    version: "1.0.0"
 
 esp32:
   board: esp32-s3-devkitc1-n4r2 # Waveshare ESP32-S3-Tiny
