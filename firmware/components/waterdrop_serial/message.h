@@ -55,7 +55,7 @@ struct message_variant : packed_variant<Alternatives...> {
  * MagicCounter1:
  *  - Present in messages 22:0D, 22:01, C5:01 and C5:03
  *  - In C5:03 (and maybe others) it started rising from 40 to 90 (by 10 every 6:21~6:23) after
- *    turning off input valve.
+ *    turning off inlet valve.
  *
  * MagicSensor1:
  *  - Present in message C5:02:unknown4
@@ -73,7 +73,7 @@ struct MessageC2 {
   /**
    * State of the RO unit, but also having effect on faucet screen state.
    *
-   * 0xF1 - pump running OR no input water when trying to run (but before E03 is detected)
+   * 0xF1 - pump running OR no inlet water when trying to run (but before E03 is detected)
    * 0xF7 - briefly before pump running for every-5-min-flush
    * 0xFF - pump idle
    * 0xF3, 0xF5, 0xF6 - flushing after boot?
@@ -81,9 +81,9 @@ struct MessageC2 {
    */
   uint8_t state;
 
-  /* Input valve state?
+  /* Inlet valve state?
    *
-   * 0x03 - pump running OR there's no input water
+   * 0x03 - pump running OR there's no inlet water
    * 0x01 - pump idle
    */
   uint8_t unknown = 0x03;

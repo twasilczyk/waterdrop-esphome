@@ -16,8 +16,8 @@ switch:
 
 valve:
   - platform: template
-    id: input_water_valve
-    name: "Input water valve"
+    id: inlet_water_valve
+    name: "Inlet water valve"
     device_class: water
     optimistic: true
     restore_mode: RESTORE_AND_CALL
@@ -43,25 +43,25 @@ script:
             lambda: 'return open;'
           then:
             - valve.template.publish:
-                id: input_water_valve
+                id: inlet_water_valve
                 current_operation: OPENING
             - switch.turn_on: valve_in1
             - delay: ${valve_pulse_duration}
             - switch.turn_off: valve_in1
             - delay: ${valve_cooldown}
             - valve.template.publish:
-                id: input_water_valve
+                id: inlet_water_valve
                 state: OPEN
                 current_operation: IDLE
           else:
             - valve.template.publish:
-                id: input_water_valve
+                id: inlet_water_valve
                 current_operation: CLOSING
             - switch.turn_on: valve_in2
             - delay: ${valve_pulse_duration}
             - switch.turn_off: valve_in2
             - delay: ${valve_cooldown}
             - valve.template.publish:
-                id: input_water_valve
+                id: inlet_water_valve
                 state: CLOSED
                 current_operation: IDLE

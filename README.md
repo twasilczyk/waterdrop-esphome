@@ -21,6 +21,8 @@ See the story: [Hacking a water filter through a 7-segment display](docs/story.m
 - Switchable power supply to the main RO unit
 - Emergency water shutoff with external latching solenoid valve
 
+![Screenshot of Home Assistant dashboard with controls and sensors](docs/ha-controls.png)
+
 ### Refrigerator line workaround
 
 Waterdrop RO water filter systems don't play particularly well with refrigerator water lines. After dispensing water from the refrigerator, the RO unit tends to switch to an erratic flush mode: briefly flushing every 5 minutes. This continues until water is dispensed from the original Waterdrop smart faucet.
@@ -50,6 +52,7 @@ Best for long-term maintenance.
          - firmware/builder-package.yaml
    ```
 3. Install over USB at first, then you can switch to OTA
+4. If installing for the first time, don't forget to enable power to the RO system - it controlls both power supply and serial communication (with faucet as well as the main unit)
 
 ### Local environment
 
@@ -111,4 +114,14 @@ Or from VSCode:
 | U2  | 1   | ESP32-S3-Tiny | [ESP32-S3-Tiny-Kit](https://docs.waveshare.com/ESP32-S3-Tiny?variant=ESP32-S3-Tiny-Kit) | 11.99 | |
 | U3  | 1   | 74AHCT125 | SN74AHCT125QDRQ1 | 0.70 | |
 | U4  | 1   | TB67H450A | TB67H450AFNG     | 0.85 | Yes (valve) |
-|     | 34  |           |                 | 28.87 | 21.11 w/o |
+|     | 34  |           |                  | 28.87 | 21.11 w/o |
+
+### Inlet water valve
+
+Inlet water valve is an emergency shutoff valve for inlet water in case other components of your smart home detected a leak. However, I haven't had much luck finding one exactly matching my requirements:
+ - Latching/pulse/bistable, so it doesn't take constant load (if Normally Closed) or wouldn't unintentionally re-open water flow in case of power loss (if Normally Open).
+ - 3/8" Push-Fit connection to match RO system tubing.
+ - Ideally 24V, to directly accept RO power supply voltage.
+ - Reasonably priced.
+
+A close one is SDF-S209B-24V, priced at $3.65 - but requires two G1/2 to Push-Fit 3/8 adapters. **24V latching solenoids are the only supported type of external inlet valves.**
