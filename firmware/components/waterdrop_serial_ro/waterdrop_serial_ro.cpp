@@ -107,8 +107,8 @@ void WaterdropSerialRo::set_air_temperature_sensor(sensor::Sensor *sensor) {
   air_temperature_sensor_ = sensor;
 }
 
-void WaterdropSerialRo::set_operating_lifetime_sensor(sensor::Sensor *sensor) {
-  operating_lifetime_sensor_ = sensor;
+void WaterdropSerialRo::set_last_filter_change_sensor(sensor::Sensor *sensor) {
+  last_filter_change_sensor_ = sensor;
 }
 
 void WaterdropSerialRo::set_pump_active_sensor(binary_sensor::BinarySensor *sensor) {
@@ -212,10 +212,10 @@ void WaterdropSerialRo::handle_c5_message_(const frame::Frame &frame) {
       const auto expected = message::MessageC5Slot01{};
       if (slot.unknown1 != expected.unknown1 || slot.unknown2 != expected.unknown2 ||
           slot.unknown3 != expected.unknown3 || slot.unknown4 != expected.unknown4 ||
-          slot.unknown5 != expected.unknown5 || slot.unknown6 != expected.unknown6) {
+          slot.unknown5 != expected.unknown5) {
         publish_unexpected_frame_(frame, "Unexpected C5 slot 01");
       }
-      publish_unknown_sensor_(UnknownSensor::C5_SLOT_01_UNKNOWN7, slot.unknown7);
+      publish_unknown_sensor_(UnknownSensor::MAGIC_COUNTER1C, slot.magicCounter1c);
 #endif
       break;
     }
@@ -228,26 +228,26 @@ void WaterdropSerialRo::handle_c5_message_(const frame::Frame &frame) {
           slot.unknown6 != expected.unknown6) {
         publish_unexpected_frame_(frame, "Unexpected C5 slot 02");
       }
-      publish_unknown_sensor_(UnknownSensor::C5_SLOT_02_UNKNOWN4, slot.unknown4);
+      publish_unknown_sensor_(UnknownSensor::MAGIC_SENSOR1, slot.magicSensor1);
       publish_unknown_sensor_(UnknownSensor::C5_SLOT_02_UNKNOWN7, slot.unknown7);
 #endif
       break;
     }
     case message::MessageC5Slot::SLOT_03: {
       const auto &slot = response.get<message::MessageC5Slot03>();
-      if (operating_lifetime_sensor_ != nullptr) {
-        operating_lifetime_sensor_->publish_state(
-            static_cast<uint16_t>(slot.operating_lifetime_hours)
-            * slot.OPERATING_LIFETIME_ERROR / HOURS_PER_DAY);
+      publish_unknown_sensor_(UnknownSensor::TEMPERATURE2, slot.air_temperature);
+      if (last_filter_change_sensor_ != nullptr) {
+        last_filter_change_sensor_->publish_state(
+            static_cast<uint16_t>(slot.hours_since_service) / HOURS_PER_DAY);
       }
 
 #ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
       const auto expected = message::MessageC5Slot03{};
-      if (slot.unknown1 != expected.unknown1 || slot.unknown5 != expected.unknown5 ||
+      if (slot.unknown1 != expected.unknown1 ||
           slot.unknown7 != expected.unknown7) {
         publish_unexpected_frame_(frame, "Unexpected C5 slot 03");
       }
-      publish_unknown_sensor_(UnknownSensor::C5_SLOT_03_UNKNOWN6, slot.unknown6);
+      publish_unknown_sensor_(UnknownSensor::MAGIC_COUNTER1D, slot.magicCounter1d);
 #endif
       break;
     }
@@ -267,8 +267,10 @@ void WaterdropSerialRo::handle_c5_message_(const frame::Frame &frame) {
       break;
     }
     case message::MessageC5Slot::SLOT_05: {
-#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
       const auto &slot = response.get<message::MessageC5Slot05>();
+      publish_unknown_sensor_(UnknownSensor::TEMPERATURE3, slot.air_temperature_1);
+      publish_unknown_sensor_(UnknownSensor::TEMPERATURE4, slot.air_temperature_2);
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
       const auto expected = message::MessageC5Slot05{};
       if (slot.unknown1 != expected.unknown1 || slot.unknown2 != expected.unknown2 ||
           slot.unknown5 != expected.unknown5 || slot.unknown6 != expected.unknown6 ||
@@ -293,14 +295,13 @@ void WaterdropSerialRo::handle_response_message_(const frame::Frame &frame) {
 #ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
       const auto &slot = response.get<message::Message22Slot01>();
       const auto expected = message::Message22Slot01{};
-      if (slot.unknown1 != expected.unknown1 || slot.unknown3 != expected.unknown3 ||
-          slot.unknown5 != expected.unknown5 || slot.unknown7 != expected.unknown7 ||
+      if (slot.unknown7 != expected.unknown7 ||
           slot.unknown8 != expected.unknown8) {
         publish_unexpected_frame_(frame, "Unexpected 22 slot 01");
       }
-      publish_unknown_sensor_(UnknownSensor::SLOT_22_01_UNKNOWN2, slot.unknown2);
-      publish_unknown_sensor_(UnknownSensor::SLOT_22_01_UNKNOWN4, slot.unknown4);
-      publish_unknown_sensor_(UnknownSensor::SLOT_22_01_UNKNOWN6, slot.unknown6);
+      publish_unknown_sensor_(UnknownSensor::MAGIC_COUNTER1B_CF, slot.magicCounter1bCF);
+      publish_unknown_sensor_(UnknownSensor::MAGIC_COUNTER1B_RO, slot.magicCounter1bRO);
+      publish_unknown_sensor_(UnknownSensor::MAGIC_COUNTER1B_CB, slot.magicCounter1bCB);
 #endif
       break;
     }
@@ -369,14 +370,13 @@ void WaterdropSerialRo::handle_response_message_(const frame::Frame &frame) {
 #ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
       const auto &slot = response.get<message::Message22Slot0D>();
       const auto expected = message::Message22Slot0D{};
-      if (slot.unknown1 != expected.unknown1 || slot.unknown3 != expected.unknown3 ||
-          slot.unknown5 != expected.unknown5 || slot.unknown7 != expected.unknown7 ||
+      if (slot.unknown7 != expected.unknown7 ||
           slot.unknown8 != expected.unknown8) {
         publish_unexpected_frame_(frame, "Unexpected 22 slot 0D");
       }
-      publish_unknown_sensor_(UnknownSensor::SLOT_22_0D_UNKNOWN2, slot.unknown2);
-      publish_unknown_sensor_(UnknownSensor::SLOT_22_0D_UNKNOWN4, slot.unknown4);
-      publish_unknown_sensor_(UnknownSensor::SLOT_22_0D_UNKNOWN6, slot.unknown6);
+      publish_unknown_sensor_(UnknownSensor::MAGIC_COUNTER1A_CF, slot.magicCounter1aCF);
+      publish_unknown_sensor_(UnknownSensor::MAGIC_COUNTER1A_RO, slot.magicCounter1aRO);
+      publish_unknown_sensor_(UnknownSensor::MAGIC_COUNTER1A_CB, slot.magicCounter1aCB);
 #endif
       break;
     }

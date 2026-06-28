@@ -15,7 +15,7 @@ See the story: [Hacking a water filter through a 7-segment display](docs/story.m
   - Pump state (idle, active, flushing)
   - Error codes
   - Ambient air temperature
-  - Operating lifetime
+  - Last filter change time
   - Potentially more: ~14 16-bit fields are still not reverse-engineered
 - Simulates faucet handle position (see [Refrigerator line workaround](#refrigerator-line-workaround))
 - Switchable power supply to the main RO unit

@@ -16,6 +16,12 @@ struct message_variant : packed_variant<Alternatives...> {
   using packed_variant<Alternatives...>::operator=;
 };
 
+/* Please note that time based values are not perfectly accurate:
+ *  - The RO unit counts a full day after about 24:05 hours.
+ *  - Timer-based values are stored to EEPROM every 24 hours, so they reset a given day on each
+ *   power cycle.
+ */
+
 /* Water events are spread between 3 fields:
  *  - MessageC2::state
  *  - MessageC5Slot04::unknown1
@@ -53,18 +59,17 @@ struct message_variant : packed_variant<Alternatives...> {
 /* Partially reverse engineered magic values.
  *
  * MagicCounter1:
- *  - Present in messages 22:0D, 22:01, C5:01 and C5:03
- *  - In C5:03 (and maybe others) it started rising from 40 to 90 (by 10 every 6:21~6:23) after
- *    turning off inlet valve.
+ *  - Increases by 10 every 6:21~6:23min after water flow problems (ejected filter, closed valve).
+ *  - Doesn't increase after E03 error gets activated (rises 5 times after problem arises).
+ *  - Some variants (A and B) drop when their respective filter is reset, others (C and D) drop
+ *    when *any* filter gets reset.
  *
  * MagicSensor1:
- *  - Present in message C5:02:unknown4
  *  - Analog range 4-46, but also observed 53 in winter
  *  - Fairly stable.
  *
  * Air temperature:
- *  - Present in messages C5:03, C5:05, 22:03
- *  - Looks the same, but then why is it twice in C5:05?
+ *  - Looks the same, but then why is it twice in MessageC5Slot05?
  */
 
 struct MessageC2 {
@@ -73,11 +78,12 @@ struct MessageC2 {
   /**
    * State of the RO unit, but also having effect on faucet screen state.
    *
-   * 0xF1 - pump running OR no inlet water when trying to run (but before E03 is detected)
+   * 0xF1 - "needs water"? 5s present before pump is running OR continuously when no inlet water
+   *        (but before E03 is detected)
    * 0xF7 - briefly before pump running for every-5-min-flush
-   * 0xFF - pump idle
+   * 0xFF - idle
    * 0xF3, 0xF5, 0xF6 - flushing after boot?
-   * 0xF0 - E03?
+   * 0xF0 - E03
    */
   uint8_t state;
 
@@ -118,8 +124,7 @@ struct MessageC5Slot01 {
   uint8_t unknown3 = 0x22;
   uint8_t unknown4 = 0x00;
   uint8_t unknown5 = 0x00;
-  uint8_t unknown6 = 0x00;
-  uint8_t unknown7 = 0x0A;  // MagicCounter1
+  endian::big_uint16_t magicCounter1c = 0;
 };
 
 struct MessageC5Slot02 {
@@ -128,10 +133,10 @@ struct MessageC5Slot02 {
   uint8_t unknown1 = 0x00;
   uint8_t unknown2 = 0x00;
   uint8_t unknown3 = 0x00;
-  uint8_t unknown4 = 0x35;  // MagicSensor1
+  uint8_t magicSensor1 = 0x35;
   uint8_t unknown5 = 0x08;
   uint8_t unknown6 = 0x34;
-  uint8_t unknown7 = 0x00;  // 00, 01
+  uint8_t unknown7 = 0x00;  // 0x01 when E03
 };
 
 struct MessageC5Slot03 {
@@ -140,28 +145,25 @@ struct MessageC5Slot03 {
   uint8_t unknown1 = 0x00;
   uint8_t air_temperature = 20;
 
-  // Total time RO unit was powered on.
-  endian::big_uint16_t operating_lifetime_hours = 48;
-  // RO firmware counts a full day after 24:05 hours.
-  static constexpr float OPERATING_LIFETIME_ERROR = 1440.0f / 1445.0f;
+  // When was the last service (e.g. filter replacement) in runtime hours.
+  endian::big_uint16_t hours_since_service = 48;
 
-  uint8_t unknown5 = 0x00;
-  uint8_t unknown6 = 0x0A;  // MagicCounter1
+  endian::big_uint16_t magicCounter1d = 0;
   uint8_t unknown7 = 0x00;
 };
 
 struct MessageC5Slot04 {
   static constexpr MessageC5Slot TAG = MessageC5Slot::SLOT_04;
 
-  // Corelated with MessageC2::state
-  // - FF when idle
-  // - F0 when E03 (and F1 right before that)
-  uint8_t unknown1 = 0xF1;  // F1, F3, FF
+  // Same as MessageC2::state, but may lose brief spikes.
+  uint8_t unknown1 = 0xFF;
 
   // Corelated with MessageC2::state
-  // - F1 when idle
+  // - F1: when idle
+  // - F3: active during closed inlet testing (inlet closed + restarting RO every 20 minutes)
+  // - F5, F7: unknown spikes
   // - Not reacting to E03
-  uint8_t unknown2 = 0xF1;  // F1, F3
+  uint8_t unknown2 = 0xF1;
 
   uint8_t unknown3 = 0x00;
   uint8_t unknown4 = 0x00;
@@ -291,7 +293,7 @@ struct Message22Slot05 {
   uint8_t unknown8 = 0x00;
 };
 
-// CF, RO, CB (H, L): filter used life. Turns orange at 360 units before red
+// CF, RO, CB (H, L): filter used life. Turns orange at 360 hours (15 days) before turning red
 struct Message22Slot02 {
   static constexpr Message22Slot TAG = Message22Slot::SLOT_02;
 
@@ -302,30 +304,23 @@ struct Message22Slot02 {
   uint8_t unknown2 = 0x00;
 };
 
-// unknown2/unknown4/unknown6: always the same and same in 01 and 0D slots.
 struct Message22Slot0D {
   static constexpr Message22Slot TAG = Message22Slot::SLOT_0D;
 
-  uint8_t unknown1 = 0x00;
-  uint8_t unknown2 = 0x0A;  // MagicCounter1
-  uint8_t unknown3 = 0x00;
-  uint8_t unknown4 = 0x0A;  // MagicCounter1
-  uint8_t unknown5 = 0x00;
-  uint8_t unknown6 = 0x0A;  // MagicCounter1
+  endian::big_uint16_t magicCounter1aCF = 0;
+  endian::big_uint16_t magicCounter1aRO = 0;
+  endian::big_uint16_t magicCounter1aCB = 0;
   uint8_t unknown7 = 0x00;
   uint8_t unknown8 = 0x00;
 };
 
-// Seems to be the same as 0D slot
+
 struct Message22Slot01 {
   static constexpr Message22Slot TAG = Message22Slot::SLOT_01;
 
-  uint8_t unknown1 = 0x00;
-  uint8_t unknown2 = 0x0A;  // MagicCounter1
-  uint8_t unknown3 = 0x00;
-  uint8_t unknown4 = 0x0A;  // MagicCounter1
-  uint8_t unknown5 = 0x00;
-  uint8_t unknown6 = 0x0A;  // MagicCounter1
+  endian::big_uint16_t magicCounter1bCF = 0;
+  endian::big_uint16_t magicCounter1bRO = 0;
+  endian::big_uint16_t magicCounter1bCB = 0;
   uint8_t unknown7 = 0x00;
   uint8_t unknown8 = 0x00;
 };

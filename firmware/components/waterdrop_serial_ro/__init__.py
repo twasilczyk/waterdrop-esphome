@@ -19,7 +19,6 @@ from esphome.const import (
     ENTITY_CATEGORY_CONFIG,
     ENTITY_CATEGORY_DIAGNOSTIC,
     STATE_CLASS_MEASUREMENT,
-    STATE_CLASS_TOTAL_INCREASING,
     UNIT_CELSIUS,
     UNIT_PARTS_PER_MILLION,
     UNIT_PERCENT,
@@ -57,7 +56,7 @@ CONF_HEALTH = "health"
 CONF_REMAINING_LIFE = "remaining_life"
 CONF_REMAINING_PERCENT = "remaining_percent"
 CONF_TDS = "tds"
-CONF_OPERATING_LIFETIME = "operating_lifetime"
+CONF_LAST_FILTER_CHANGE = "last_filter_change"
 CONF_PUMP_ACTIVE = "pump_active"
 CONF_REPORT_UNKNOWN_VALUES = "report_unknown_values"
 CONF_REQUEST_UNKNOWN_VALUES = "request_unknown_values"
@@ -90,6 +89,8 @@ class ErrorType:
 class UnknownSensor:
     key: str
     name: str
+    unit_of_measurement: str = cv.UNDEFINED
+    device_class: str = cv.UNDEFINED
 
 
 @dataclass(frozen=True)
@@ -116,21 +117,21 @@ UNKNOWN_SENSORS = (
     UnknownSensor("c2_state", "C2 raw state"),
     UnknownSensor("c2_unknown", "C2 unknown"),
     UnknownSensor("c2_error", "C2 unknown error"),
-    UnknownSensor("c5_01_unknown7", "C5 01 unknown 7"),
-    UnknownSensor("c5_02_unknown4", "C5 02 unknown 4"),
+    UnknownSensor("magic_counter1c", "MagicCounter1C"),
+    UnknownSensor("magic_sensor1", "MagicSensor1"),
     UnknownSensor("c5_02_unknown7", "C5 02 unknown 7"),
-    UnknownSensor("c5_03_unknown6", "C5 03 unknown 6"),
+    UnknownSensor("magic_counter1d", "MagicCounter1D"),
     UnknownSensor("c5_04_unknown1", "C5 04 unknown 1"),
     UnknownSensor("c5_04_unknown2", "C5 04 unknown 2"),
     UnknownSensor("c5_04_unknown6", "C5 04 unknown 6"),
     UnknownSensor("c5_04_unknown7", "C5 04 unknown 7"),
-    UnknownSensor("22_01_unknown2", "22 01 unknown 2"),
-    UnknownSensor("22_01_unknown4", "22 01 unknown 4"),
-    UnknownSensor("22_01_unknown6", "22 01 unknown 6"),
+    UnknownSensor("magic_counter1b_cf", "MagicCounter1B CF"),
+    UnknownSensor("magic_counter1b_ro", "MagicCounter1B RO"),
+    UnknownSensor("magic_counter1b_cb", "MagicCounter1B CB"),
     UnknownSensor("22_05_unknown4", "22 05 unknown 4"),
-    UnknownSensor("22_0d_unknown2", "22 0D unknown 2"),
-    UnknownSensor("22_0d_unknown4", "22 0D unknown 4"),
-    UnknownSensor("22_0d_unknown6", "22 0D unknown 6"),
+    UnknownSensor("magic_counter1a_cf", "MagicCounter1A CF"),
+    UnknownSensor("magic_counter1a_ro", "MagicCounter1A RO"),
+    UnknownSensor("magic_counter1a_cb", "MagicCounter1A CB"),
     UnknownSensor("22_0e_unknown1", "22 0E unknown 1"),
     UnknownSensor("22_0e_unknown2", "22 0E unknown 2"),
     UnknownSensor("22_0e_unknown3", "22 0E unknown 3"),
@@ -139,6 +140,9 @@ UNKNOWN_SENSORS = (
     UnknownSensor("22_0e_unknown6", "22 0E unknown 6"),
     UnknownSensor("22_0e_unknown7", "22 0E unknown 7"),
     UnknownSensor("22_0f_unknown1", "22 0F unknown 1"),
+    UnknownSensor("temperature2", "Temperature 2", UNIT_CELSIUS, DEVICE_CLASS_TEMPERATURE),
+    UnknownSensor("temperature3", "Temperature 3", UNIT_CELSIUS, DEVICE_CLASS_TEMPERATURE),
+    UnknownSensor("temperature4", "Temperature 4", UNIT_CELSIUS, DEVICE_CLASS_TEMPERATURE),
 )
 
 REQUEST_UNKNOWN_NUMBERS = (
@@ -218,6 +222,8 @@ UNKNOWN_SENSOR_CONFIG_SCHEMA = {
         filters=[{"delta": 0}],
         state_class=STATE_CLASS_MEASUREMENT,
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+        unit_of_measurement=unknown_sensor.unit_of_measurement,
+        device_class=unknown_sensor.device_class,
     )
     for unknown_sensor in UNKNOWN_SENSORS
 }
@@ -259,14 +265,14 @@ ENTITIES_SCHEMA = cv.Schema(
             state_class=STATE_CLASS_MEASUREMENT,
         ),
         cv.Optional(
-            CONF_OPERATING_LIFETIME,
-            default={CONF_NAME: "Operating lifetime"},
+            CONF_LAST_FILTER_CHANGE,
+            default={CONF_NAME: "Last filter change"},
         ): sensor.sensor_schema(
             unit_of_measurement=UNIT_DAY,
-            accuracy_decimals=1,
+            accuracy_decimals=0,
             filters=[{"delta": 0}],
             device_class=DEVICE_CLASS_DURATION,
-            state_class=STATE_CLASS_TOTAL_INCREASING,
+            state_class=STATE_CLASS_MEASUREMENT,
         ),
         cv.Optional(
             CONF_PUMP_ACTIVE, default={CONF_NAME: "Pump active"}
@@ -339,8 +345,8 @@ async def to_code(config):
         )
     )
     cg.add(
-        var.set_operating_lifetime_sensor(
-            await sensor.new_sensor(entities_config[CONF_OPERATING_LIFETIME])
+        var.set_last_filter_change_sensor(
+            await sensor.new_sensor(entities_config[CONF_LAST_FILTER_CHANGE])
         )
     )
     pump_active = await binary_sensor.new_binary_sensor(entities_config[CONF_PUMP_ACTIVE])

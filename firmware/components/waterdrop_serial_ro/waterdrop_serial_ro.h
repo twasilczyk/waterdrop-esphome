@@ -85,21 +85,21 @@ class WaterdropSerialRo : public WaterdropSerial {
     C2_STATE,
     C2_UNKNOWN,
     C2_UNKNOWN_ERROR,
-    C5_SLOT_01_UNKNOWN7,
-    C5_SLOT_02_UNKNOWN4,
+    MAGIC_COUNTER1C,
+    MAGIC_SENSOR1,
     C5_SLOT_02_UNKNOWN7,
-    C5_SLOT_03_UNKNOWN6,
+    MAGIC_COUNTER1D,
     C5_SLOT_04_UNKNOWN1,
     C5_SLOT_04_UNKNOWN2,
     C5_SLOT_04_UNKNOWN6,
     C5_SLOT_04_UNKNOWN7,
-    SLOT_22_01_UNKNOWN2,
-    SLOT_22_01_UNKNOWN4,
-    SLOT_22_01_UNKNOWN6,
+    MAGIC_COUNTER1B_CF,
+    MAGIC_COUNTER1B_RO,
+    MAGIC_COUNTER1B_CB,
     SLOT_22_05_UNKNOWN4,
-    SLOT_22_0D_UNKNOWN2,
-    SLOT_22_0D_UNKNOWN4,
-    SLOT_22_0D_UNKNOWN6,
+    MAGIC_COUNTER1A_CF,
+    MAGIC_COUNTER1A_RO,
+    MAGIC_COUNTER1A_CB,
     SLOT_22_0E_UNKNOWN1,
     SLOT_22_0E_UNKNOWN2,
     SLOT_22_0E_UNKNOWN3,
@@ -108,6 +108,9 @@ class WaterdropSerialRo : public WaterdropSerial {
     SLOT_22_0E_UNKNOWN6,
     SLOT_22_0E_UNKNOWN7,
     SLOT_22_0F_UNKNOWN1,
+    TEMPERATURE2,
+    TEMPERATURE3,
+    TEMPERATURE4,
     COUNT_,
   };
   static constexpr size_t UNKNOWN_SENSOR_SENSOR_TYPES_COUNT =
@@ -120,7 +123,7 @@ class WaterdropSerialRo : public WaterdropSerial {
   void set_filter_sensors(filter::Type filter, filter::Sensors sensors);
   void set_tds_sensor(sensor::Sensor *sensor);
   void set_air_temperature_sensor(sensor::Sensor *sensor);
-  void set_operating_lifetime_sensor(sensor::Sensor *sensor);
+  void set_last_filter_change_sensor(sensor::Sensor *sensor);
   void set_pump_active_sensor(binary_sensor::BinarySensor *sensor);
   void set_flushing_sensor(binary_sensor::BinarySensor *sensor);
   void set_error_sensors(
@@ -158,7 +161,7 @@ class WaterdropSerialRo : public WaterdropSerial {
   std::array<filter::Filter, static_cast<size_t>(filter::Type::COUNT_)> filters_{};
   sensor::Sensor *tds_sensor_ = nullptr;
   sensor::Sensor *air_temperature_sensor_ = nullptr;
-  sensor::Sensor *operating_lifetime_sensor_ = nullptr;
+  sensor::Sensor *last_filter_change_sensor_ = nullptr;
   binary_sensor::BinarySensor *pump_active_sensor_ = nullptr;
   binary_sensor::BinarySensor *flushing_sensor_ = nullptr;
   std::array<binary_sensor::BinarySensor *, ERROR_TYPES_COUNT> error_sensors_{};
