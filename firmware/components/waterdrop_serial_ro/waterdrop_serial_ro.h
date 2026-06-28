@@ -81,7 +81,7 @@ class WaterdropSerialRo : public WaterdropSerial {
 #endif
 
 #ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
-  enum class RawByteSensor : size_t {
+  enum class UnknownSensor : size_t {
     C2_STATE,
     C2_UNKNOWN,
     C2_UNKNOWN_ERROR,
@@ -110,8 +110,8 @@ class WaterdropSerialRo : public WaterdropSerial {
     SLOT_22_0F_UNKNOWN1,
     COUNT_,
   };
-  static constexpr size_t RAW_BYTE_SENSOR_TYPES_COUNT =
-      static_cast<size_t>(RawByteSensor::COUNT_);
+  static constexpr size_t UNKNOWN_SENSOR_SENSOR_TYPES_COUNT =
+      static_cast<size_t>(UnknownSensor::COUNT_);
 #endif
 
   WaterdropSerialRo();
@@ -126,8 +126,8 @@ class WaterdropSerialRo : public WaterdropSerial {
   void set_error_sensors(
       std::array<binary_sensor::BinarySensor *, ERROR_TYPES_COUNT> sensors);
 #ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
-  void set_raw_byte_sensors(
-      std::array<sensor::Sensor *, RAW_BYTE_SENSOR_TYPES_COUNT> sensors);
+  void set_unknown_sensors(
+      std::array<sensor::Sensor *, UNKNOWN_SENSOR_SENSOR_TYPES_COUNT> sensors);
   void set_unexpected_frame_sensor(text_sensor::TextSensor *sensor);
 #endif
 #ifdef USE_WATERDROP_SERIAL_RO_REQUEST_UNKNOWN_VALUES
@@ -146,7 +146,7 @@ class WaterdropSerialRo : public WaterdropSerial {
   void handle_c5_message_(const frame::Frame &frame);
   void handle_response_message_(const frame::Frame &frame);
 #ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
-  void publish_raw_byte_(RawByteSensor sensor, uint8_t value);
+  void publish_unknown_sensor_(UnknownSensor sensor, int value);
   void publish_unexpected_frame_(const frame::Frame &frame, const char *reason);
 #endif
   filter::Filter &filter_(filter::Type filter);
@@ -163,7 +163,7 @@ class WaterdropSerialRo : public WaterdropSerial {
   binary_sensor::BinarySensor *flushing_sensor_ = nullptr;
   std::array<binary_sensor::BinarySensor *, ERROR_TYPES_COUNT> error_sensors_{};
 #ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
-  std::array<sensor::Sensor *, RAW_BYTE_SENSOR_TYPES_COUNT> raw_byte_sensors_{};
+  std::array<sensor::Sensor *, UNKNOWN_SENSOR_SENSOR_TYPES_COUNT> unknown_sensors_{};
   text_sensor::TextSensor *unexpected_frame_sensor_ = nullptr;
 #endif
 #ifdef USE_WATERDROP_SERIAL_RO_REQUEST_UNKNOWN_VALUES

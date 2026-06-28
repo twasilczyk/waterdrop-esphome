@@ -65,7 +65,7 @@ CONF_TOTAL_LIFE = "total_life"
 CONF_UNEXPECTED_FRAME = "unexpected_frame"
 
 ICON_FAUCET = "mdi:faucet"
-ICON_RAW_BYTE = "mdi:hexadecimal"
+ICON_UNKNOWN_SENSOR = "mdi:hexadecimal"
 ICON_WATER_QUALITY = "mdi:water-opacity"
 ICON_WATER_OK = "mdi:water-check"
 ICON_WATER_FILTER = "mdi:air-filter"
@@ -87,7 +87,7 @@ class ErrorType:
 
 
 @dataclass(frozen=True)
-class RawByteSensor:
+class UnknownSensor:
     key: str
     name: str
 
@@ -96,7 +96,7 @@ class RawByteSensor:
 class RequestUnknownNumber:
     key: str
     name: str
-    icon: str = ICON_RAW_BYTE
+    icon: str = ICON_UNKNOWN_SENSOR
 
 
 FILTERS = (
@@ -112,33 +112,33 @@ ERROR_SENSORS = (
     ErrorType("e04", "E04 error"),
 )
 
-RAW_BYTE_SENSORS = (
-    RawByteSensor("c2_state", "C2 raw state"),
-    RawByteSensor("c2_unknown", "C2 unknown"),
-    RawByteSensor("c2_error", "C2 unknown error"),
-    RawByteSensor("c5_01_unknown7", "C5 01 unknown 7"),
-    RawByteSensor("c5_02_unknown4", "C5 02 unknown 4"),
-    RawByteSensor("c5_02_unknown7", "C5 02 unknown 7"),
-    RawByteSensor("c5_03_unknown6", "C5 03 unknown 6"),
-    RawByteSensor("c5_04_unknown1", "C5 04 unknown 1"),
-    RawByteSensor("c5_04_unknown2", "C5 04 unknown 2"),
-    RawByteSensor("c5_04_unknown6", "C5 04 unknown 6"),
-    RawByteSensor("c5_04_unknown7", "C5 04 unknown 7"),
-    RawByteSensor("22_01_unknown2", "22 01 unknown 2"),
-    RawByteSensor("22_01_unknown4", "22 01 unknown 4"),
-    RawByteSensor("22_01_unknown6", "22 01 unknown 6"),
-    RawByteSensor("22_05_unknown4", "22 05 unknown 4"),
-    RawByteSensor("22_0d_unknown2", "22 0D unknown 2"),
-    RawByteSensor("22_0d_unknown4", "22 0D unknown 4"),
-    RawByteSensor("22_0d_unknown6", "22 0D unknown 6"),
-    RawByteSensor("22_0e_unknown1", "22 0E unknown 1"),
-    RawByteSensor("22_0e_unknown2", "22 0E unknown 2"),
-    RawByteSensor("22_0e_unknown3", "22 0E unknown 3"),
-    RawByteSensor("22_0e_unknown4", "22 0E unknown 4"),
-    RawByteSensor("22_0e_unknown5", "22 0E unknown 5"),
-    RawByteSensor("22_0e_unknown6", "22 0E unknown 6"),
-    RawByteSensor("22_0e_unknown7", "22 0E unknown 7"),
-    RawByteSensor("22_0f_unknown1", "22 0F unknown 1"),
+UNKNOWN_SENSORS = (
+    UnknownSensor("c2_state", "C2 raw state"),
+    UnknownSensor("c2_unknown", "C2 unknown"),
+    UnknownSensor("c2_error", "C2 unknown error"),
+    UnknownSensor("c5_01_unknown7", "C5 01 unknown 7"),
+    UnknownSensor("c5_02_unknown4", "C5 02 unknown 4"),
+    UnknownSensor("c5_02_unknown7", "C5 02 unknown 7"),
+    UnknownSensor("c5_03_unknown6", "C5 03 unknown 6"),
+    UnknownSensor("c5_04_unknown1", "C5 04 unknown 1"),
+    UnknownSensor("c5_04_unknown2", "C5 04 unknown 2"),
+    UnknownSensor("c5_04_unknown6", "C5 04 unknown 6"),
+    UnknownSensor("c5_04_unknown7", "C5 04 unknown 7"),
+    UnknownSensor("22_01_unknown2", "22 01 unknown 2"),
+    UnknownSensor("22_01_unknown4", "22 01 unknown 4"),
+    UnknownSensor("22_01_unknown6", "22 01 unknown 6"),
+    UnknownSensor("22_05_unknown4", "22 05 unknown 4"),
+    UnknownSensor("22_0d_unknown2", "22 0D unknown 2"),
+    UnknownSensor("22_0d_unknown4", "22 0D unknown 4"),
+    UnknownSensor("22_0d_unknown6", "22 0D unknown 6"),
+    UnknownSensor("22_0e_unknown1", "22 0E unknown 1"),
+    UnknownSensor("22_0e_unknown2", "22 0E unknown 2"),
+    UnknownSensor("22_0e_unknown3", "22 0E unknown 3"),
+    UnknownSensor("22_0e_unknown4", "22 0E unknown 4"),
+    UnknownSensor("22_0e_unknown5", "22 0E unknown 5"),
+    UnknownSensor("22_0e_unknown6", "22 0E unknown 6"),
+    UnknownSensor("22_0e_unknown7", "22 0E unknown 7"),
+    UnknownSensor("22_0f_unknown1", "22 0F unknown 1"),
 )
 
 REQUEST_UNKNOWN_NUMBERS = (
@@ -209,17 +209,17 @@ ERROR_CONFIG_SCHEMA = {
     for error in ERROR_SENSORS
 }
 
-RAW_BYTE_CONFIG_SCHEMA = {
+UNKNOWN_SENSOR_CONFIG_SCHEMA = {
     cv.Optional(
-        raw_byte.key, default={CONF_NAME: raw_byte.name}
+        unknown_sensor.key, default={CONF_NAME: unknown_sensor.name}
     ): sensor.sensor_schema(
-        icon=ICON_RAW_BYTE,
+        icon=ICON_UNKNOWN_SENSOR,
         accuracy_decimals=0,
         filters=[{"delta": 0}],
         state_class=STATE_CLASS_MEASUREMENT,
         entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
     )
-    for raw_byte in RAW_BYTE_SENSORS
+    for unknown_sensor in UNKNOWN_SENSORS
 }
 
 REQUEST_UNKNOWN_NUMBER_CONFIG_SCHEMA = {
@@ -280,14 +280,14 @@ ENTITIES_SCHEMA = cv.Schema(
             icon=ICON_WATER_PUMP,
             device_class=DEVICE_CLASS_RUNNING,
         ),
-        **RAW_BYTE_CONFIG_SCHEMA,
+        **UNKNOWN_SENSOR_CONFIG_SCHEMA,
         **REQUEST_UNKNOWN_NUMBER_CONFIG_SCHEMA,
         **ERROR_CONFIG_SCHEMA,
         **FILTER_CONFIG_SCHEMA,
         cv.Optional(
             CONF_UNEXPECTED_FRAME, default={CONF_NAME: "Unexpected frame"}
         ): text_sensor.text_sensor_schema(
-            icon=ICON_RAW_BYTE,
+            icon=ICON_UNKNOWN_SENSOR,
             entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ),
         cv.Optional(
@@ -356,11 +356,11 @@ async def to_code(config):
 
     if config[CONF_REPORT_UNKNOWN_VALUES]:
         cg.add_define("USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES")
-        raw_byte_sensors = [
-            await sensor.new_sensor(entities_config[raw_byte.key])
-            for raw_byte in RAW_BYTE_SENSORS
+        unknown_sensors = [
+            await sensor.new_sensor(entities_config[unknown_sensor.key])
+            for unknown_sensor in UNKNOWN_SENSORS
         ]
-        cg.add(var.set_raw_byte_sensors(cg.ArrayInitializer(*raw_byte_sensors)))
+        cg.add(var.set_unknown_sensors(cg.ArrayInitializer(*unknown_sensors)))
         unexpected_frame = await text_sensor.new_text_sensor(
             entities_config[CONF_UNEXPECTED_FRAME]
         )

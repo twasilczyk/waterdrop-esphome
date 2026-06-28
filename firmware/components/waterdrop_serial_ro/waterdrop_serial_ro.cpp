@@ -128,12 +128,12 @@ void WaterdropSerialRo::set_error_sensors(
 }
 
 #ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
-void WaterdropSerialRo::set_raw_byte_sensors(
-    std::array<sensor::Sensor *, RAW_BYTE_SENSOR_TYPES_COUNT> sensors) {
+void WaterdropSerialRo::set_unknown_sensors(
+    std::array<sensor::Sensor *, UNKNOWN_SENSOR_SENSOR_TYPES_COUNT> sensors) {
   assert(std::all_of(sensors.begin(), sensors.end(), [](auto *sensor) {
     return sensor != nullptr;
   }));
-  raw_byte_sensors_ = sensors;
+  unknown_sensors_ = sensors;
 }
 
 void WaterdropSerialRo::set_unexpected_frame_sensor(text_sensor::TextSensor *sensor) {
@@ -179,10 +179,10 @@ void WaterdropSerialRo::handle_frame(const frame::Frame &frame) {
 void WaterdropSerialRo::handle_state_message_(const frame::Frame &frame) {
   const auto &message = frame.as<message::MessageC2>();
 #ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
-  publish_raw_byte_(RawByteSensor::C2_STATE, message.state);
-  publish_raw_byte_(RawByteSensor::C2_UNKNOWN, message.unknown);
-  publish_raw_byte_(
-      RawByteSensor::C2_UNKNOWN_ERROR,
+  publish_unknown_sensor_(UnknownSensor::C2_STATE, message.state);
+  publish_unknown_sensor_(UnknownSensor::C2_UNKNOWN, message.unknown);
+  publish_unknown_sensor_(
+      UnknownSensor::C2_UNKNOWN_ERROR,
       static_cast<uint8_t>(message.error & UNKNOWN_ERROR_MASK));
 #endif
 
@@ -215,7 +215,7 @@ void WaterdropSerialRo::handle_c5_message_(const frame::Frame &frame) {
           slot.unknown5 != expected.unknown5 || slot.unknown6 != expected.unknown6) {
         publish_unexpected_frame_(frame, "Unexpected C5 slot 01");
       }
-      publish_raw_byte_(RawByteSensor::C5_SLOT_01_UNKNOWN7, slot.unknown7);
+      publish_unknown_sensor_(UnknownSensor::C5_SLOT_01_UNKNOWN7, slot.unknown7);
 #endif
       break;
     }
@@ -228,8 +228,8 @@ void WaterdropSerialRo::handle_c5_message_(const frame::Frame &frame) {
           slot.unknown6 != expected.unknown6) {
         publish_unexpected_frame_(frame, "Unexpected C5 slot 02");
       }
-      publish_raw_byte_(RawByteSensor::C5_SLOT_02_UNKNOWN4, slot.unknown4);
-      publish_raw_byte_(RawByteSensor::C5_SLOT_02_UNKNOWN7, slot.unknown7);
+      publish_unknown_sensor_(UnknownSensor::C5_SLOT_02_UNKNOWN4, slot.unknown4);
+      publish_unknown_sensor_(UnknownSensor::C5_SLOT_02_UNKNOWN7, slot.unknown7);
 #endif
       break;
     }
@@ -247,7 +247,7 @@ void WaterdropSerialRo::handle_c5_message_(const frame::Frame &frame) {
           slot.unknown7 != expected.unknown7) {
         publish_unexpected_frame_(frame, "Unexpected C5 slot 03");
       }
-      publish_raw_byte_(RawByteSensor::C5_SLOT_03_UNKNOWN6, slot.unknown6);
+      publish_unknown_sensor_(UnknownSensor::C5_SLOT_03_UNKNOWN6, slot.unknown6);
 #endif
       break;
     }
@@ -259,10 +259,10 @@ void WaterdropSerialRo::handle_c5_message_(const frame::Frame &frame) {
           slot.unknown5 != expected.unknown5) {
         publish_unexpected_frame_(frame, "Unexpected C5 slot 04");
       }
-      publish_raw_byte_(RawByteSensor::C5_SLOT_04_UNKNOWN1, slot.unknown1);
-      publish_raw_byte_(RawByteSensor::C5_SLOT_04_UNKNOWN2, slot.unknown2);
-      publish_raw_byte_(RawByteSensor::C5_SLOT_04_UNKNOWN6, slot.unknown6);
-      publish_raw_byte_(RawByteSensor::C5_SLOT_04_UNKNOWN7, slot.unknown7);
+      publish_unknown_sensor_(UnknownSensor::C5_SLOT_04_UNKNOWN1, slot.unknown1);
+      publish_unknown_sensor_(UnknownSensor::C5_SLOT_04_UNKNOWN2, slot.unknown2);
+      publish_unknown_sensor_(UnknownSensor::C5_SLOT_04_UNKNOWN6, slot.unknown6);
+      publish_unknown_sensor_(UnknownSensor::C5_SLOT_04_UNKNOWN7, slot.unknown7);
 #endif
       break;
     }
@@ -298,9 +298,9 @@ void WaterdropSerialRo::handle_response_message_(const frame::Frame &frame) {
           slot.unknown8 != expected.unknown8) {
         publish_unexpected_frame_(frame, "Unexpected 22 slot 01");
       }
-      publish_raw_byte_(RawByteSensor::SLOT_22_01_UNKNOWN2, slot.unknown2);
-      publish_raw_byte_(RawByteSensor::SLOT_22_01_UNKNOWN4, slot.unknown4);
-      publish_raw_byte_(RawByteSensor::SLOT_22_01_UNKNOWN6, slot.unknown6);
+      publish_unknown_sensor_(UnknownSensor::SLOT_22_01_UNKNOWN2, slot.unknown2);
+      publish_unknown_sensor_(UnknownSensor::SLOT_22_01_UNKNOWN4, slot.unknown4);
+      publish_unknown_sensor_(UnknownSensor::SLOT_22_01_UNKNOWN6, slot.unknown6);
 #endif
       break;
     }
@@ -316,7 +316,7 @@ void WaterdropSerialRo::handle_response_message_(const frame::Frame &frame) {
       filter_(filter::Type::RO).set_total_life(slot.filter_total_life_ro);
       filter_(filter::Type::CB).set_total_life(slot.filter_total_life_cb);
 #ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
-      publish_raw_byte_(RawByteSensor::SLOT_22_0F_UNKNOWN1, slot.unknown1);
+      publish_unknown_sensor_(UnknownSensor::SLOT_22_0F_UNKNOWN1, slot.unknown1);
 #endif
       break;
     }
@@ -361,7 +361,7 @@ void WaterdropSerialRo::handle_response_message_(const frame::Frame &frame) {
           slot.unknown8 != expected.unknown8) {
         publish_unexpected_frame_(frame, "Unexpected 22 slot 05");
       }
-      publish_raw_byte_(RawByteSensor::SLOT_22_05_UNKNOWN4, slot.unknown4);
+      publish_unknown_sensor_(UnknownSensor::SLOT_22_05_UNKNOWN4, slot.unknown4);
 #endif
       break;
     }
@@ -374,9 +374,9 @@ void WaterdropSerialRo::handle_response_message_(const frame::Frame &frame) {
           slot.unknown8 != expected.unknown8) {
         publish_unexpected_frame_(frame, "Unexpected 22 slot 0D");
       }
-      publish_raw_byte_(RawByteSensor::SLOT_22_0D_UNKNOWN2, slot.unknown2);
-      publish_raw_byte_(RawByteSensor::SLOT_22_0D_UNKNOWN4, slot.unknown4);
-      publish_raw_byte_(RawByteSensor::SLOT_22_0D_UNKNOWN6, slot.unknown6);
+      publish_unknown_sensor_(UnknownSensor::SLOT_22_0D_UNKNOWN2, slot.unknown2);
+      publish_unknown_sensor_(UnknownSensor::SLOT_22_0D_UNKNOWN4, slot.unknown4);
+      publish_unknown_sensor_(UnknownSensor::SLOT_22_0D_UNKNOWN6, slot.unknown6);
 #endif
       break;
     }
@@ -387,13 +387,13 @@ void WaterdropSerialRo::handle_response_message_(const frame::Frame &frame) {
       if (slot.unknown8 != expected.unknown8) {
         publish_unexpected_frame_(frame, "Unexpected 22 slot 0E");
       }
-      publish_raw_byte_(RawByteSensor::SLOT_22_0E_UNKNOWN1, slot.unknown1);
-      publish_raw_byte_(RawByteSensor::SLOT_22_0E_UNKNOWN2, slot.unknown2);
-      publish_raw_byte_(RawByteSensor::SLOT_22_0E_UNKNOWN3, slot.unknown3);
-      publish_raw_byte_(RawByteSensor::SLOT_22_0E_UNKNOWN4, slot.unknown4);
-      publish_raw_byte_(RawByteSensor::SLOT_22_0E_UNKNOWN5, slot.unknown5);
-      publish_raw_byte_(RawByteSensor::SLOT_22_0E_UNKNOWN6, slot.unknown6);
-      publish_raw_byte_(RawByteSensor::SLOT_22_0E_UNKNOWN7, slot.unknown7);
+      publish_unknown_sensor_(UnknownSensor::SLOT_22_0E_UNKNOWN1, slot.unknown1);
+      publish_unknown_sensor_(UnknownSensor::SLOT_22_0E_UNKNOWN2, slot.unknown2);
+      publish_unknown_sensor_(UnknownSensor::SLOT_22_0E_UNKNOWN3, slot.unknown3);
+      publish_unknown_sensor_(UnknownSensor::SLOT_22_0E_UNKNOWN4, slot.unknown4);
+      publish_unknown_sensor_(UnknownSensor::SLOT_22_0E_UNKNOWN5, slot.unknown5);
+      publish_unknown_sensor_(UnknownSensor::SLOT_22_0E_UNKNOWN6, slot.unknown6);
+      publish_unknown_sensor_(UnknownSensor::SLOT_22_0E_UNKNOWN7, slot.unknown7);
 #endif
       break;
     }
@@ -406,11 +406,11 @@ void WaterdropSerialRo::handle_response_message_(const frame::Frame &frame) {
 }
 
 #ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
-void WaterdropSerialRo::publish_raw_byte_(RawByteSensor sensor, uint8_t value) {
+void WaterdropSerialRo::publish_unknown_sensor_(UnknownSensor sensor, int value) {
   const auto index = static_cast<size_t>(sensor);
-  assert(index < raw_byte_sensors_.size());
-  if (raw_byte_sensors_[index] != nullptr) {
-    raw_byte_sensors_[index]->publish_state(value);
+  assert(index < unknown_sensors_.size());
+  if (unknown_sensors_[index] != nullptr) {
+    unknown_sensors_[index]->publish_state(value);
   }
 }
 
