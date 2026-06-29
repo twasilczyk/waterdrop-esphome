@@ -22,56 +22,6 @@ struct message_variant : packed_variant<Alternatives...> {
  *   power cycle.
  */
 
-/* Water events are spread between 3 fields:
- *  - MessageC2::state
- *  - MessageC5Slot04::unknown1
- *  - MessageC5Slot04::unknown2
- *
- * Idle
- *  - C2=FF, C5u1=FF, C5u2=F1
- *
- * Filling glass with water (without pressure tank):
- *  - C5u2 doesn't change at all
- *  - First 3 seconds: C2 oscillates between F1 and FF with 650ms period
- *  - Then C5u1 joins, oscillating between F1 and FF with 2.5s period
- *  - However, when I cleared out "activity every 5 minutes", both started at the same time,
- *    oscillating slow once and then C2 continued fast and C5u1 slow.
- *
- * Filling pitcher or glass with water (with pressure tank):
- *  - C5u2 doesn't change at all
- *  - Both C2 and C5u1 oscillate together (at the same time) between F1 and FF with 8s cycle
- *
- * Activity every 5 minutes (with or without pressure tank):
- *  - C2 goes FF -> F7 -> F1 -> FF very quickly (unmeasurable in HA)
- *  - Variant A: C5u1/2 doesn't change
- *  - Variant B: C5u1/2 change to F7 for 2x the time C2 was not in idle (starting together with C2)
- *  - Variant C: C5u1 changes to F1 for 2x the time C2 was not in idle, C5u2 doesn't change
- *  - Variants change periodically (cycle is 5 minutes):
- *    - Variant A runs for 2 cycles after water use or 9 cycles (but sometimes 6, first time after
- *      water use) after Variant C
- *    - Variant B runs for 3 cycles after Variant A
- *    - Variant C runs for 5 cycles after Variant B (but sometimes 8, first time after water use)
- *  - I was able to clear this by claiming "the faucet is open", so there was no activity for the
- *    next 8 hours until the next use. But switching to this state doesn't clear it alone - it has
- *    to happen right before the 5-minute activity. Then, it triggers pump for 1 minute.
- */
-
-/* Partially reverse engineered magic values.
- *
- * MagicCounter1:
- *  - Increases by 10 every 6:21~6:23min after water flow problems (ejected filter, closed valve).
- *  - Doesn't increase after E03 error gets activated (rises 5 times after problem arises).
- *  - Some variants (A and B) drop when their respective filter is reset, others (C and D) drop
- *    when *any* filter gets reset.
- *
- * MagicSensor1:
- *  - Analog range 4-46, but also observed 53 in winter
- *  - Fairly stable.
- *
- * Air temperature:
- *  - Looks the same, but then why is it twice in MessageC5Slot05?
- */
-
 struct MessageC2 {
   static constexpr auto COMMAND = frame::Command::COMMAND_C2;
 
@@ -212,19 +162,6 @@ struct Message22Request {
    *
    * Original faucet requests slots in the following order:
    * 0x0D, 0x01, 0x0E, 0x0F, 0x03, 0x02
-   *
-   * Other slots:
-   * Invalid slot (SS= 0, 4, 6, 8-12, 17-127)
-   * SS 01 00 00 CA xx xx xx yy
-   *  - xx are the same as in last transmitted C5 frame payload
-   *  - yy is that frame's checksum
-   *
-   * Constant slots:
-   * 07 00 00 00 00 00 00 00 00
-   * 10 00 00 00 00 00 00 66 22
-   *
-   * TODO: Investigate one noisy slot:
-   * 05 00 00 00 xx 00 00 00 00
    */
   Message22Slot slot;
 
@@ -243,7 +180,6 @@ static_assert(sizeof(Message22Request) == 8);
 struct Message22Slot0E {
   static constexpr Message22Slot TAG = Message22Slot::SLOT_0E;
 
-  // Dynamic bytes observed while flushing.
   uint8_t unknown1 = 0xFF;
   uint8_t unknown2 = 0xFF;
   uint8_t unknown3 = 0xFF;
@@ -254,7 +190,6 @@ struct Message22Slot0E {
   uint8_t unknown8 = 0x11;
 };
 
-// CF, RO, CB (H, L): filter total life (when it turns red).
 struct Message22Slot0F {
   static constexpr Message22Slot TAG = Message22Slot::SLOT_0F;
 
@@ -293,7 +228,7 @@ struct Message22Slot05 {
   uint8_t unknown8 = 0x00;
 };
 
-// CF, RO, CB (H, L): filter used life. Turns orange at 360 hours (15 days) before turning red
+// CF, RO, CB: filter used life. Turns orange at 360 hours (15 days) before turning red
 struct Message22Slot02 {
   static constexpr Message22Slot TAG = Message22Slot::SLOT_02;
 
