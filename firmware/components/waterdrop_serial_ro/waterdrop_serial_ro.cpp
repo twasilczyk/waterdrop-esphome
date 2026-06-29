@@ -235,7 +235,9 @@ void WaterdropSerialRo::handle_c5_message_(const frame::Frame &frame) {
     }
     case message::MessageC5Slot::SLOT_03: {
       const auto &slot = response.get<message::MessageC5Slot03>();
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
       publish_unknown_sensor_(UnknownSensor::TEMPERATURE2, slot.air_temperature);
+#endif
       if (last_filter_change_sensor_ != nullptr) {
         last_filter_change_sensor_->publish_state(
             static_cast<uint16_t>(slot.hours_since_service) / HOURS_PER_DAY);
@@ -267,10 +269,10 @@ void WaterdropSerialRo::handle_c5_message_(const frame::Frame &frame) {
       break;
     }
     case message::MessageC5Slot::SLOT_05: {
+#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
       const auto &slot = response.get<message::MessageC5Slot05>();
       publish_unknown_sensor_(UnknownSensor::TEMPERATURE3, slot.air_temperature_1);
       publish_unknown_sensor_(UnknownSensor::TEMPERATURE4, slot.air_temperature_2);
-#ifdef USE_WATERDROP_SERIAL_RO_REPORT_UNKNOWN_VALUES
       const auto expected = message::MessageC5Slot05{};
       if (slot.unknown1 != expected.unknown1 || slot.unknown2 != expected.unknown2 ||
           slot.unknown5 != expected.unknown5 || slot.unknown6 != expected.unknown6 ||

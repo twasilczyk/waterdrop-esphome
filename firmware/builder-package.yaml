@@ -18,3 +18,8 @@ external_components:
       - waterdrop_serial
       - waterdrop_serial_faucet
       - waterdrop_serial_ro
+
+logger:
+  logs:
+    waterdrop_serial_faucet: INFO
+    waterdrop_serial_ro: INFO
